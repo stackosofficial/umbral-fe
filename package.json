@@ -6,8 +6,16 @@
     "start": "next start"
   },
   "dependencies": {
+    "@metamask/eth-sig-util": "^5.0.2",
+    "@nucypher/umbral-pre": "0.7.0",
+    "antd": "^5.1.6",
+    "axios": "^1.2.6",
+    "eth-crypto": "^2.5.0",
+    "ethereumjs-util": "^7.1.5",
+    "ipfs-http-client": "^60.0.0",
     "next": "latest",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "web3": "^1.8.1"
   }
 }

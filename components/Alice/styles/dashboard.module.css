@@ -1,0 +1,31 @@
+.container {
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboardContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.appContainer {
+    border: 1px;
+    border-style: solid;
+    width: 200px;
+    min-height: 100px;
+    margin: 10px;
+}
+
+.appTitle {
+    text-align: center;
+}
+
+.nftRole {
+    word-spacing: 5px;
+}
+
+.navButton {
+    display: flex;
+    justify-content: center;
+}
