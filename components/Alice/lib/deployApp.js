@@ -71,7 +71,6 @@ const encryptPayload = async (umbral, objectToEncrypt, bobPublicKeys) => {
     let aliceSk = umbral.SecretKey.random();
     let alicePk = aliceSk.publicKey();
 
-
     // console.log("bob:", umbral.PublicKey.fromBytes(bobPublicKeys[0]));
 
     // Get the public key from the metamask
@@ -320,35 +319,38 @@ const uploadPayloadOnIpfs = async (dataToPass, umbralBobPKList) => {
   };
 
 
-export async function deployApp(wumbral, selectedNft, appName, umbralBobPKList)
+export async function deployApp(wumbral, appData, umbralBobPKList)
 {
 
+    console.log("container port: ", appData.containerPort, appData.accessPort, appData.nftID);
+    let hostURL = `${appData.appName}-${appData.nftID}-marvel.stackos.io`;
     let payload = {
-        "appName": appName?.toLowerCase(),
-        "hostUrl": "v2test-po3c904a5f23f868f309a6db2a428529f33848f517-marvel.stackos.io",
+        "appName": appData.appName.toLowerCase(),
+        "hostUrl": hostURL,
         "image": {
-            "repository": "alethio/ethereum-lite-explorer",
-            "tag": "latest"
+            "repository": appData.imageName,
+            "tag": appData.tag
         },
         "privateImage": false,
-        "containerPort": "[{\"protocol\":\"TCP\",\"port\":80}]",
+        // "containerPort": "[{\"protocol\":\"TCP\",\"port\":80}]",
+        containerPort: JSON.stringify([{protocol: "TCP", port: appData.containerPort}]),
         "persistenceEnabled": false,
         "whitelistedIps": [
             "0.0.0.0/0"
         ],
-        "replicaCount": "2",
+        "replicaCount": "1",
         "namespace": "0x3c904a5f23f868f309a6db2a428529f33848f517",
         "resourceLimits": {
-            "memory": "10M",
-            "cpu": "10m"
+            "memory": "100M",
+            "cpu": "100m"
         },
         "resourceRequests": {
-            "memory": "10M",
-            "cpu": "10m"
+            "memory": "100M",
+            "cpu": "100m"
         },
         "enableCertKey": false,
         "networkId": 137,
-        "servicePort": "[{\"protocol\":\"TCP\",\"port\":80}]",
+        "servicePort":JSON.stringify([{protocol: "TCP", port: appData.accessPort}]),
         "path": [
             "/"
         ],
@@ -359,7 +361,6 @@ export async function deployApp(wumbral, selectedNft, appName, umbralBobPKList)
             }
         ],
         "args": [],
-        umbralBobPKList: umbralBobPKList,
     };
 
     const {
@@ -369,9 +370,9 @@ export async function deployApp(wumbral, selectedNft, appName, umbralBobPKList)
       newAliceFragments,
       senderSecretKey,
       senderPublicKey,
-    } = await encryptPayload(wumbral, payload, payload.umbralBobPKList);
+    } = await encryptPayload(wumbral, payload, umbralBobPKList);
 
-    // await encryptPayload(wumbral, payload, payload.umbralBobPKList);
+    // await encryptPayload(wumbral, payload, umbralBobPKList);
 
     const aliceKeys = {
       publicKey: senderPublicKey,
@@ -394,9 +395,9 @@ export async function deployApp(wumbral, selectedNft, appName, umbralBobPKList)
       encryptionUint8Array: ciphertext,
       capsule,
       fragments,
-      umbralBobPKList: payload.umbralBobPKList,
+      umbralBobPKList: umbralBobPKList,
       newAliceFragments,
-      selectedNft: selectedNft,
+      selectedNft: appData.nftID,
       resourceArray: Object.values(payload?.resourceLimits).map((a) => Number(a.slice(0, -1))),
       kFragForBob,
       kFragForReader
@@ -404,6 +405,7 @@ export async function deployApp(wumbral, selectedNft, appName, umbralBobPKList)
 
     console.log("data to pass: ", dataToPass);
 
+    console.log("appData: ", payload);
 
     const payloadResponse = await uploadPayloadOnIpfs(dataToPass);
 

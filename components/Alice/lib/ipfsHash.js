@@ -105,7 +105,8 @@ export const uploadIpfsDataIntoCache = async (data, selectedNft) => {
                     );
                   }
                 });
-              } else {
+              }
+               else {
                 console.log('do nothingggg');
                 const publicKey = JSON.parse(
                   await readFile(

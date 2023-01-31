@@ -292,6 +292,7 @@ const AppForm = ({umbral, formValues, subnets, isUpdate, selectedNFT}) => {
         console.log("appName; ", values.appName, appName);
 
         return {
+            ...values,
             balanceToAdd: 0,
             nftID: values.nftID,
             rlsAddressList,
@@ -328,7 +329,7 @@ const AppForm = ({umbral, formValues, subnets, isUpdate, selectedNFT}) => {
 
 
         let bobKeyList = await getBobKeys(formatParams.subnetList);
-        const CID = await deployApp(umbral, formatParams.nftID, formatParams.appName, bobKeyList);
+        const CID = await deployApp(umbral, formatParams, bobKeyList);
         
         formatParams.CID = CID;
 

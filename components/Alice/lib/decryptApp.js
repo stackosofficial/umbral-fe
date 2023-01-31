@@ -49,7 +49,6 @@ function customPromiseRace(promiseArr, expectedCount) {
       if (promiseArr.length < expectedCount) {
         throw new Error(`Not enough promises to get ${expectedCount} results`);
       }
-      // array to store the results of fulfilled promises
       const results = [];
       var errorCount = 0;
 
@@ -63,8 +62,6 @@ function customPromiseRace(promiseArr, expectedCount) {
       for (const p of promiseArr) {
         i += 1;
         Promise.resolve(p).then((result) => {
-          // push the promise fulfillment value to the "results"
-          // array only if we aren't already finished
           if (results?.length < expectedCount) {
             results.push(result);
 
