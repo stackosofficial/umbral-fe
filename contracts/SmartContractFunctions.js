@@ -976,33 +976,6 @@ const removeAppsRole = async (nftId, role, address) => {
 
 // --------------------- ContractBasedDeployment
 
-const createAppData = async (
-  appName,
-  cid,
-  nftId,
-  resources,
-  subnetIdList,
-  lastUpdateTime,
-  cidLock
-) => {
-  const { digest, hashFunction, size } = convertIPFSHash(cid);
-  // appName = window.btoa(appName);
-  return await sendTransaction(
-    true,
-    ContractBasedDeploymentContract,
-    'createData',
-    defaultOptions,
-    nftId,
-    appName,
-    digest,
-    hashFunction,
-    size,
-    subnetIdList,
-    resources,
-    lastUpdateTime,
-    cidLock
-  );
-};
 
 const getAppsOfNFT = async (nftId) => {
   let data = await sendTransaction(
@@ -1014,62 +987,37 @@ const getAppsOfNFT = async (nftId) => {
   );
   data = data.filter(app => app.app.appName !== '');
 
-  console.log('data  :', data);
-  const te = [];
-  for (let i = 0; i < data.length; i++) {
-    if (data[i].app.appName !== '') {
-      const subs = [];
-      for (let j = 0; j < data[i].app[5].length; j++) {
-        if (
-          data[i].app[5][j] &&
-          data[i].appSubnets[j].currentMultipiler &&
-          data[i].appSubnets[j].relicaList
-        ) {
-          subs.push({
-            subnetId: data[i].app[5][j],
-            currentMultipiler: data[i].appSubnets[j].currentMultipiler,
-            relicaList: data[i].appSubnets[j].replicaList,
-          });
-        }
-      }
+  const appList = data.map(appObj => {
+    const app = appObj.app;
+    const multiplier = appObj.appSubnets.map(subnetMultiplier =>
+        subnetMultiplier.replicaList.map(replicaList => replicaList.map(
+          replica => Number(replica)
+        ))
+      );
+    
+    const resourceArray = app.resourceArray.map(resource => Number(resource));
+    const subnetList = app.subnetList.map(subnet => Number(subnet));
+    const hashFunction = Number(app.hashFunction);
+    const size = Number(app.size);
 
-      te.push({
-        appId: data[i].app[0],
-        appName: data[i].app[1],
-        cid: getIPFSHash(data[i].app[2], data[i].app[3], data[i].app[4]),
-        subnetIdList: data[i].app[5],
-        resourceArray: data[i].app[6],
-        lastUpdateTime: data[i].app[7],
-        cidLock: data[i].app[8],
-        subnets: subs,
-      });
+    return {
+      appID: Number(app.appID),
+      appName: app.appName,
+      digest: app.digest,
+      hashFunction: hashFunction,
+      size: size,
+      subnetList: subnetList,
+      resourceArray: resourceArray,
+      lastUpdatedTime: app.lastUpdatedTime,
+      cidLock: app.cidLock,
+      multiplier: multiplier,
+      cid: getIPFSHash(app.digest, hashFunction, size)
     }
-  }
-  // console.log("te :  ", te);
-  const filterData = data
-    .filter((el) => el.app.appName !== '')
-    .map((t) => {
-      return {
-        appId: t.app[0],
-        appName: t.app[1],
-        cid: getIPFSHash(t.app[2], t.app[3], t.app[4]),
-        subnetIdList: t.app[5],
-        resourceArray: t.app[6],
-        lastUpdateTime: t.app[7],
-        cidLock: t.app[8],
-        subnets: t.app[5]?.map((q, index) => {
-          return {
-            subnetId: q,
-            currentMultipiler: t.appSubnets[index][0],
-            relicaList: t.appSubnets[index][1],
-          };
-        }),
-      };
-    });
+  })
 
-  // console.log("filterData : ", te);
+  console.log("got appList: ", appList);
 
-  return te;
+  return appList;
 };
 
 const getMultiplier = async (nftId, appName, subnetId) => {
@@ -1095,12 +1043,28 @@ const deleteApp = async (nftId, appName) => {
   );
 };
 
+// uint256 balanceToAdd,
+// uint256 nftID,
+// address[][] memory rlsAddresses,
+// uint256[] memory licenseFee,
+// string memory appName,
+// bytes32 digest,
+// uint8[] memory hashAndSize,
+// uint256[] memory subnetList,
+// uint256[][][] memory multiplier,
+// uint256[] memory resourceArray,
+// string memory lastUpdatedTime
+
 const updateApp = async (
+  balanceToAdd,
+  nftID,
+  rlsAddressList,
+  licenseFeeList,
   appName,
   cid,
-  nftId,
-  resources,
-  subnetIdList,
+  subnetList,
+  multiplier,
+  resourceArray,
   lastUpdateTime
 ) => {
   const { digest, hashFunction, size } = convertIPFSHash(cid);
@@ -1108,20 +1072,23 @@ const updateApp = async (
   return await sendTransaction(
     true,
     ContractBasedDeploymentContract,
-    'updateData',
+    'updateApp',
     defaultOptions,
-    nftId,
+    balanceToAdd,
+    nftID,
+    rlsAddressList,
+    licenseFeeList,
     appName,
     digest,
-    hashFunction,
-    size,
-    subnetIdList,
-    resources,
+    [hashFunction, size],
+    subnetList,
+    multiplier,
+    resourceArray,
     lastUpdateTime
   );
 };
 
-const subscribeAndCreateData = async (
+const createApp = async (
   balanceToAdd,
   nftId,
   rlsAddresses,
@@ -1228,9 +1195,9 @@ export {
   changeAppNFTId,
   selectedAppNFTId,
   getSelectedAppNFTid,
-  createAppData,
   grantRole,
   getAppsOfNFT,
+  createApp,
   deleteApp,
   updateApp,
   subscribeSubnet,
@@ -1252,7 +1219,6 @@ export {
   sellXCT,
   getAccountRoles,
   getAllListedSubnets,
-  subscribeAndCreateData,
   getAccountsWithRole,
   removeAppsRole,
   getAppNFTBalance,

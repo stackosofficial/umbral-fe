@@ -3,70 +3,44 @@ import React, { useEffect, useState } from 'react';
 import {deployApp, getPublicKey} from './lib/deployApp';
 import {uploadIpfsDataIntoCache} from './lib/ipfsHash';
 import { getAppsOfNFT, getClustersOfSubnet, subscribeAndCreateData, fetchAddressAndContracts, getAllSubnets, getListOfOwnedAppNFT, getAccountRoles } from '../../contracts/SmartContractFunctions';
-import AppForm from './AppForm';
+import {AppForm} from './AppForm';
 import AppDashboard from './AppDashboard';
 import NFTDashboard from './NFTDashboard';
 import styles from './styles/alice.module.css';
 import ETHCrypto from 'eth-crypto';
 import * as sigUtil from '@metamask/eth-sig-util';
 import * as ethUtil from 'ethereumjs-util';
+import {TAB_LIST, TAB_NAME_ID} from '../../contracts/utils';
 
-const tabList = [
-  "nft",
-  "dashboard",
-  "app",
-]
 
 const Alice = () => {
+  const defaultCreateApp = {
+    appName: 'explorer3',
+    imageName: 'alethio/ethereum-lite-explorer',
+    tag: 'latest',
+    referralAddress: '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC',
+    licenseAddress: '0x90F79bf6EB2c4f870365E785982E1f101E93b906',
+    supportAddress: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
+    platformAddress: '0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc',
+    licenseFee: 3000,
+    protocol: 'TCP',
+    containerPort: '80',
+    accessPort: '80',
+    // hostURL: 'explorer-1',
+    hostURL: '',
+    path: '/',
+    dripRate: '1 day'
+  }
+
   const [umbral, setUmbral] = useState();
-  const [appList, setAppList] = useState([]);
-  // const [readNFTList, setReadNFTList] = useState([]);
   const [subnetList, setSubnetList] = useState([]);
   const [subnetNameList, setSubnetNameList] = useState([]);
   const [bobKeyList, setBobKeyList] = useState([]);
-  const [currentTab, setCurrentTab] = useState(tabList[0]);
+  const [currentTab, setCurrentTab] = useState(TAB_LIST[TAB_NAME_ID.NFT_DASH]);
   const [selectedNFT, setSelectedNFT] = useState(0);
   const [selectedNFTRole, setSelectedNFTRole] = useState({});
-//   const [appList, setAppList] = useState([]);
-
-//   const getAllApps = async () => {
-//     let data = await getAppsOfNFT(1);
-//     setAppList(data);
-//   };
-
-//   const displayApp = (app) => {
-//     console.log('app ', app);
-//     return (
-//       <>
-//         <div>
-//           <label>App name: {app.appName}</label>
-//         </div>
-//       </>
-//     );
-//   };
-//   const displayAllApp = () => {
-//     return appList.map((app) => {
-//       return displayApp(app);
-//     });
-//   };
-
-const defaultCreateApp = {
-  appName: 'explorer3',
-  imageName: 'alethio/ethereum-lite-explorer',
-  tag: 'latest',
-  referralAddress: '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC',
-  licenseAddress: '0x90F79bf6EB2c4f870365E785982E1f101E93b906',
-  supportAddress: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
-  platformAddress: '0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc',
-  licenseFee: 3000,
-  protocol: 'TCP',
-  containerPort: '80',
-  accessPort: '80',
-  // hostURL: 'explorer-1',
-  hostURL: '',
-  path: '/',
-  dripRate: '1 day'
-}
+  const [appData, setAppData] = useState(defaultCreateApp);
+  const [appList, setAppList] = useState([]);
 
 
 const selectNFT = (nftID, nftRole) => {
@@ -264,7 +238,10 @@ const createApp = async () => {
     <button onClick={() => decryptBobKey()}>decrypt bob key</button> */}
     <div>
       {
-        tabList.map(tabName => {
+        TAB_LIST.map(tabName => {
+          if(tabName == TAB_LIST[TAB_NAME_ID.UPDATE_APP_FORM])
+            return '';
+  
           return (
             <button onClick={() => setCurrentTab(tabName)} disabled={selectedNFT == 0}>{tabName}</button>
           )
@@ -272,11 +249,17 @@ const createApp = async () => {
       }
     </div>
     <div className={styles.component}>
-      {currentTab==tabList[0] ? <NFTDashboard setSelectedNFT={selectNFT} selectedNFT={selectedNFT}/> : ''}
-      {currentTab==tabList[1] ? <AppDashboard selectedNFT={selectedNFT} nftRole={selectedNFTRole} umbral={umbral}/>: ''}
-      {currentTab==tabList[2] ? (
+      {currentTab==TAB_LIST[TAB_NAME_ID.NFT_DASH] ? <NFTDashboard setSelectedNFT={selectNFT} selectedNFT={selectedNFT}/> : ''}
+      {currentTab==TAB_LIST[TAB_NAME_ID.APP_DASH] ? <AppDashboard setCurrentTab={setCurrentTab} setAppData={setAppData} selectedNFT={selectedNFT} nftRole={selectedNFTRole} appList={appList} setAppList={setAppList} umbral={umbral}/>: ''}
+      {currentTab==TAB_LIST[TAB_NAME_ID.APP_FORM] ? (
         subnetList && subnetList.length ?
-        <AppForm formValues={defaultCreateApp} selectedNFT={selectedNFT} subnets={{subnetList, subnetNameList}} umbral={umbral}/>
+        <AppForm formValues={appData} selectedNFT={selectedNFT} subnets={{subnetList, subnetNameList}} appList={appList} setAppList={setAppList} umbral={umbral} />
+        : ''
+      )
+      : ''}
+      {currentTab==TAB_LIST[TAB_NAME_ID.UPDATE_APP_FORM] ? (
+        subnetList && subnetList.length ?
+        <AppForm formValues={appData} selectedNFT={selectedNFT} appList={appList} setAppList={setAppList} subnets={{subnetList, subnetNameList}} umbral={umbral} isUpdate/>
         : ''
       )
       : ''}

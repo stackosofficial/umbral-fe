@@ -5,45 +5,46 @@ import { getAppsOfNFT, getClustersOfSubnet, subscribeAndCreateData, fetchAddress
 import styles from './styles/dashboard.module.css';
 import {decryptAppData, login} from './lib/decryptApp';
 import {uploadIpfsDataIntoCache} from './lib/ipfsHash';
+import {TAB_LIST, TAB_NAME_ID} from '../../contracts/utils';
+import {formatIPFSDataForUI} from './AppForm';
 
-const AppDashboard = ({selectedNFT, nftRole, umbral}) => {
-  const [appList, setAppList] = useState([]);
-//   const [appList, setAppList] = useState([]);
 
-//   const getAllApps = async () => {
-//     let data = await getAppsOfNFT(1);
-//     setAppList(data);
-//   };
+const AppDashboard = ({selectedNFT, setCurrentTab, setAppData, nftRole, appList, setAppList, umbral}) => {
 
-const clickDeleteApp = async (app) => {
-    await deleteApp(selectedNFT, app.appName);
-}
+    const clickDeleteApp = async (app) => {
+        await deleteApp(selectedNFT, app.appName);
+    }
 
-  const displayApp = (app) => {
-    console.log('app ', app);
-    // const btoa = window.btoa(app.appName);
-    const appName = app.appName;
-    // const appName = window.atob(app.appName);
-    return (
-      <>
-        <div className={styles.appContainer}>
-            <label>name: {appName}</label>
-            <button onClick={() => decryptAppData(appList, app.appName, nftRole, umbral)}> open</button>
-            <button onClick={() => clickDeleteApp(app)}>Delete</button>
-        </div>
-      </>
-    );
-  };
-  const displayAllApp = () => {
-    return appList && appList.length ? appList.map((app) => {
-      return displayApp(app);
-    }) : '';
-  };
+    const openApp = async (app) => {
+        const ipfsAppData = await decryptAppData(app, selectedNFT, nftRole, umbral);
+        const appData = await formatIPFSDataForUI(app, ipfsAppData, selectedNFT);
+
+        setAppData(appData);
+        setCurrentTab(TAB_LIST[TAB_NAME_ID.UPDATE_APP_FORM]);
+    }
+
+    const displayApp = (app) => {
+        const appName = app.appName;
+        return (
+        <>
+            <div className={styles.appContainer}>
+                <label>name: {appName}</label>
+                <button onClick={() => openApp(app)}> open</button>
+                <button onClick={() => clickDeleteApp(app)}>Delete</button>
+            </div>
+        </>
+        );
+    };
+    const displayAllApp = () => {
+        return appList && appList.length ? appList.map((app) => {
+        return displayApp(app);
+        }) : '';
+    };
 
 
   const getAllApps = async () => {
     let data = await getAppsOfNFT(selectedNFT);
-    uploadIpfsDataIntoCache(data, selectedNFT);
+    // uploadIpfsDataIntoCache(data, selectedNFT);
     setAppList(data);
   };
 

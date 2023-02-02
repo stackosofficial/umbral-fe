@@ -3,37 +3,8 @@ import * as sigUtil from '@metamask/eth-sig-util';
 import * as ethUtil from 'ethereumjs-util';
 import all from 'it-all';
 import EthCrypto from 'eth-crypto';
+import { sendToIPFS} from './ipfsHash';
 
-// const convertBobPublicKey = async (publicKeyInString) => {
-//     const objectList = await getBucket('cluster-operator-bucket');
-
-//     const foundPublicKey = objectList
-//       .filter(({ Key }) => Key?.split('/')[0] === publicKeyInString.split('-')[0])
-//       .find(({ Key }) => Key?.split('/')[1] === 'publicKey.pk');
-
-//     const param = {
-//       Key: foundPublicKey?.Key,
-//       Bucket: 'cluster-operator-bucket',
-//     };
-
-//     const parsedObject = await getObjectFromFilebase(param);
-
-//     const convertedPublicKey = [];
-//     for (let object in parsedObject?.publicKey) {
-//       convertedPublicKey.push(parsedObject?.publicKey[object]);
-//     }
-
-//     return new Uint8Array(convertedPublicKey);
-//   };
-
-export const getPublicKey = async () => {
-  let key64 = await window.ethereum.request({
-    method: 'eth_getEncryptionPublicKey',
-    params: [window.ethereum.selectedAddress],
-  });
-
-  console.log("key: ", key64);
-}
 
 const decryptPublicKey = (keys) => {
     const convertedArray = [];
@@ -58,30 +29,29 @@ const decryptSecretKey = async (encryptedText, umbral) => {
       return convertedSk;
   };
 
-const encryptPayload = async (umbral, objectToEncrypt, bobPublicKeys) => {
+const encryptPayload = async (umbral, objectToEncrypt, bobData) => {
 
-    let enc = new TextEncoder();
-    const shares = 9; // how many fragments to create
-    const threshold = 5; // how many should be enough to decrypt
-    const fragments = [];
+    const enc = new TextEncoder();
+    const shares = 9;
+    const threshold = 5
 
-    console.log("umbral: ", umbral, umbral.SecretKey, umbral.SecretKey.random);
-    console.log("calling umbral random: ", umbral.SecretKey.random());
 
-    let aliceSk = umbral.SecretKey.random();
-    let alicePk = aliceSk.publicKey();
+    const curAddress = window.ethereum.selectedAddress;
+    const creatorSK = umbral.SecretKey.random();
+    const creatorPK = creatorSK.publicKey();
+    const creatorSigner = new umbral.Signer(creatorSK);
 
-    // console.log("bob:", umbral.PublicKey.fromBytes(bobPublicKeys[0]));
+    let ethPK = sessionStorage.getItem(`stackOS_pk_${curAddress}`);
 
-    // Get the public key from the metamask
-    let key64 = await window.ethereum.request({
-      method: 'eth_getEncryptionPublicKey',
-      params: [window.ethereum.selectedAddress],
-    });
+    if(!ethPK)
+    {    // Get the public key from the metamask
+      ethPK = await window.ethereum.request({
+        method: 'eth_getEncryptionPublicKey',
+        params: [curAddress],
+      });
 
-    console.log("key64: ", key64);
-    // key64 = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
-
+      sessionStorage.setItem(`stackOS_pk_${curAddress}`, ethPK);
+    }
 
     const encrypt = (publicKey, text) => {
         const result = sigUtil.encrypt({
@@ -91,110 +61,102 @@ const encryptPayload = async (umbral, objectToEncrypt, bobPublicKeys) => {
         });
 
         return ethUtil.bufferToHex(Buffer.from(JSON.stringify(result), 'utf8'));
-        // // return Buffer.from(JSON.stringify(result), 'utf8');
-      //   const encrypted = await EthCrypto.encryptWithPublicKey(
-      //     publicKey, // by encrypting with bobs publicKey, only bob can decrypt the payload with his privateKey
-      //     text // we have to stringify the payload before we can encrypt it
-      // );
+    };
+    const encryptedSecretKey = encrypt(ethPK, creatorSK.toSecretBytes().toString());
 
-      return encrypted;
+    const plainText = JSON.stringify(objectToEncrypt);
+    const plainTextBytes = enc.encode(plainText);
+    const result = umbral.encrypt(creatorPK, plainTextBytes);
+    const cipherText = result[1];
+    const capsule = result[0];
+
+
+    const subnetList = bobData.subnetList;
+
+    const bobKFragMap = {
+      subnetList: subnetList,
+      clusters: {},
+      data: {}
     };
 
-    const alice = EthCrypto.createIdentity();
 
-    console.log("alice: ", alice);
-
-    // Encrypt the alice's secret key using metamask's public key
-    console.log("aliceSK to secret bytes: ", window.ethereum.selectedAddress);
-    const encryptedSecretKey = encrypt(key64, aliceSk.toSecretBytes().toString());
-    console.log("encryptedSecretKey: ", encryptedSecretKey);
-    // const encryptedSecretKey = encrypt(key64, aliceSk.toString());
-
-    // const alice_sk = await decryptSecretKey(encryptedSecretKey, umbral);
-    const alice_sk = aliceSk;
+    for(var i = 0; i < subnetList.length; i++)
+    {
+      const subnetID = subnetList[i];
+      const {publicKeyList, clusterIDList} = bobData[subnetID];
 
 
-    let signing_sk = umbral.SecretKey.random();
-    let signer = new umbral.Signer(signing_sk);
+      bobKFragMap.clusters[subnetID] = clusterIDList;
+      bobKFragMap.data[subnetID] = {};
 
 
-    let bobKfrags;
+      for(var j = 0; j < clusterIDList.length; j++)
+      {
+        const clusterID = clusterIDList[j];
+        const bobPKBytes = publicKeyList[j];
 
-    // const alice_pk = umbral.PublicKey.fromBytes(decryptPublicKey(alicePk.toBytes()));
-    const alice_pk = alicePk;
-
-
-    const plaintext = JSON.stringify(objectToEncrypt);
-    let plaintext_bytes = enc.encode(plaintext);
-    let result = umbral.encrypt(alice_pk, plaintext_bytes);
-    let ciphertext = result[1];
-    let capsule = result[0];
-
-
-    for (let key of bobPublicKeys) {
-        // convert the bob public key into umbral instance
-        const bob_pk = umbral.PublicKey.fromBytes(key);
-        // const bob_pk = key;
-
-        bobKfrags = umbral.generateKFrags(
-          alice_sk,
-          bob_pk,
-          signer,
+        const bobPK = umbral.PublicKey.fromBytes(bobPKBytes);
+        const bobKfrags = umbral.generateKFrags(
+          creatorSK,
+          bobPK,
+          creatorSigner,
           threshold,
           shares,
-          true, // add the delegating key (alice_pk) to the signature
-          true // add the receiving key (bob_pk) to the signature
+          true,
+          true
         );
-        fragments.push({
-          kfrag: bobKfrags.map((value) => value.toBytes()),
-          PublicKey: bob_pk.toString().split(':')[1],
-        });
+  
+        const encryptedBobKFrags = await encryptKfragsUsingUrsula(bobKfrags.map((value) => value.toBytes()));
+        bobKFragMap.data[subnetID][clusterID] = encryptedBobKFrags;
+      }
     }
 
-    const newAlicesSecreteKey = umbral?.SecretKey?.random();
-    const newAlicePublicKey = newAlicesSecreteKey?.publicKey();
+    console.log("bob kfrag map: ", bobKFragMap);
+
+    const readerSK = umbral.SecretKey.random();
+    const readerPK = readerSK.publicKey();
 
 
-    let newAliceKfrags;
-    let newAliceFragments = [];
-
-
-    newAliceKfrags = umbral.generateKFrags(
-        alice_sk,
-        newAlicePublicKey,
-        signer,
+    const readerKFrags = umbral.generateKFrags(
+        creatorSK,
+        readerPK,
+        creatorSigner,
         threshold,
         shares,
-        true, // add the delegating key (alice_pk) to the signature
-        true // add the receiving key (bob_pk) to the signature
+        true,
+        true
     );
 
+    const encryptedKFrags = await encryptKfragsUsingUrsula(readerKFrags.map((value) => value.toBytes()));
 
-    newAliceFragments.push({
-        kfrag: newAliceKfrags.map((value) => value.toBytes()),
-        PublicKey: newAlicePublicKey.toString().split(':')[1],
-        newAlicesSecreteKey: newAlicesSecreteKey.toSecretBytes(),
-      });
+    const readerData = {
+      kfrags: encryptedKFrags,
+      publicKey: readerPK.toBytes(),
+      secretKey: readerSK.toSecretBytes(),
+    };
 
-    
-    const signingVerifyKey = signing_sk.publicKey();
+
+    console.log("bobKFragMap: ", bobKFragMap);
 
     return {
-        senderSecretKey: encryptedSecretKey,
+        creator: {
+          address: curAddress,
+          publicKey: creatorPK.toBytes(),
+          secretKey: encryptedSecretKey
+        },
+        reader: readerData,
         capsule: capsule.toBytes(),
-        ciphertext: ciphertext,
-        senderPublicKey: alicePk.toBytes(),
-        fragments: fragments,
-        newAliceFragments: newAliceFragments,
-        verifyingKey: signingVerifyKey.toBytes(),
+        cipherText: cipherText,
+        bobKFragMap
+        // bobKFragList: encryptedBobKFragList,
+        // verifyingKey: signingVerifyKey.toBytes(),
       }
 };
 
 
 const encryptKfragsUsingUrsula= async (frags) => {
-    const fragmentsWithUrsula = [];
 
-    const allUrsula = [
+    const UrsulaPKList = [
     "RPsASVg5I1V5b8MuUHgyi/G4VUrzOK60khpJcGTJP0E=",
     "W/wO/HdKZmdZkr6yVGNLHRgrK3UeAQcqV/47YXf9JXY=",
     "b1f40hVJWz275hMouTkH3gXCaNlm5TCCyd4lwP1YfSI=",
@@ -206,19 +168,6 @@ const encryptKfragsUsingUrsula= async (frags) => {
     "gPB9gCOIDxfMzx/C1P52KCjBgp2fjpDdTOmaOPOmshc="
     ];
 
-    let ursulaKey64 = [];
-
-    // for(var i = 0; i < allUrsula.length; i++)
-    // {
-    //   let key64 = await window.ethereum.request({
-    //     method: 'eth_getEncryptionPublicKey',
-    //     params: [allUrsula[i]],
-    //   });
-      
-    //   ursulaKey64.push(key64);
-    // }
-
-    // Encrypt Alice's secret key
     const encrypt = (publicKey, text) => {
       const result = sigUtil.encrypt({
         publicKey,
@@ -227,112 +176,39 @@ const encryptKfragsUsingUrsula= async (frags) => {
       });
 
       return ethUtil.bufferToHex(Buffer.from(JSON.stringify(result), 'utf8'));
-    // return Buffer.from(JSON.stringify(result), 'utf8');
     };
 
-    const allFragments = frags;
-    for (let i = 0; i < allFragments.length; i++) {
-      let kfrags = [];
-      let data;
-      for (let j = 0; j < allFragments[i].kfrag.length; j++) {
-        console.log("before encrypt ursula: ", allUrsula[j]);
-        const returnedEncrytedText = encrypt(
-          allUrsula[j],
-            allFragments[i].kfrag[j].toString()
-        );
-        console.log("after encrypt ursula");
-        data = {
-          kfrag: returnedEncrytedText,
-          ursula: allUrsula[j],
-        };
-        kfrags.push(data);
-      }
-      fragmentsWithUrsula.push({
-        bobPublicKey: allFragments[i].PublicKey,
-        kfrags,
-        newAlicesSecreteKey: allFragments[i].newAlicesSecreteKey,
+    const encryptedFrags = [];
+    for(let i = 0; i < frags.length; i++)
+    {
+      const encryptedFrag = encrypt(
+        UrsulaPKList[i],
+        frags[i].toString()
+      );
+
+      encryptedFrags.push({
+        kfrag: encryptedFrag,
+        ursula: UrsulaPKList[i],
       });
-      return fragmentsWithUrsula;
     }
+
+    return encryptedFrags;
 }
 
-const uploadPayloadOnIpfs = async (dataToPass, umbralBobPKList) => {
 
-    // Get Alice public key
-    console.log("ipfs URL: ", `nft_id/${dataToPass.selectedNft}/deployment/${dataToPass.appName}/secret/capsule`);
-
-    let res = await all(
-        ipfsConfig.addAll(
-          [
-            {
-              path: `nft_id/${dataToPass.selectedNft}/deployment/${dataToPass.appName}/secret/capsule`,
-              content: Buffer.from(
-                JSON.stringify({
-                  capsule: dataToPass.capsule,
-                })
-              ),
-            },
-            {
-              path: `nft_id/${dataToPass.selectedNft}/deployment/${dataToPass.appName}/public/cipherText`,
-              content: Buffer.from(
-                JSON.stringify({
-                  cypherText: dataToPass.encryptionUint8Array,
-                })
-              ),
-            },
-            {
-              path: `nft_id/${dataToPass.selectedNft}/deployment/${dataToPass.appName}/secret/fragments`,
-              content: Buffer.from(
-                JSON.stringify({
-                  fragments: dataToPass.kFragForBob,
-                })
-              ),
-            },
-            {
-              path: `nft_id/${dataToPass.selectedNft}/deployment/${dataToPass.appName}/public/clusteroperatorKey`,
-              content: Buffer.from(
-                JSON.stringify({
-                  clusterOperatorKeys: dataToPass.selectedBobAddresses,
-                })
-              ),
-            },
-            {
-              path: `nft_id/${dataToPass.selectedNft}/deployment/${dataToPass.appName}/public/creatorData`,
-              content: Buffer.from(JSON.stringify(dataToPass.aliceKeys)),
-            },
-            {
-              path: `nft_id/${dataToPass.selectedNft}/deployment/${dataToPass.appName}/secret/nftHolderData`,
-              content: Buffer.from(
-                JSON.stringify({
-                  fragments: dataToPass.kFragForReader,
-                })
-              ),
-            },
-          ],
-          { wrapWithDirectory: true }
-        )
-      )
-    const { cid } = res.find((elm) => elm.path == '');
-    console.log('dataToPass.selectedNft, ', dataToPass.selectedNft, cid.toString());
-
-    return cid;
-  };
-
-
-export async function deployApp(wumbral, appData, umbralBobPKList)
+export async function deployApp(wumbral, appData, bobData)
 {
 
     console.log("container port: ", appData.containerPort, appData.accessPort, appData.nftID);
     let hostURL = `${appData.appName}-${appData.nftID}-marvel.stackos.io`;
     let payload = {
-        "appName": appData.appName.toLowerCase(),
+        "appName": appData.appName,
         "hostUrl": hostURL,
         "image": {
             "repository": appData.imageName,
             "tag": appData.tag
         },
         "privateImage": false,
-        // "containerPort": "[{\"protocol\":\"TCP\",\"port\":80}]",
         containerPort: JSON.stringify([{protocol: "TCP", port: appData.containerPort}]),
         "persistenceEnabled": false,
         "whitelistedIps": [
@@ -363,51 +239,14 @@ export async function deployApp(wumbral, appData, umbralBobPKList)
         "args": [],
     };
 
-    const {
-      ciphertext,
-      capsule,
-      fragments,
-      newAliceFragments,
-      senderSecretKey,
-      senderPublicKey,
-    } = await encryptPayload(wumbral, payload, umbralBobPKList);
 
-    // await encryptPayload(wumbral, payload, umbralBobPKList);
-
-    const aliceKeys = {
-      publicKey: senderPublicKey,
-      secretKey: senderSecretKey,
-    };
+    const encryptData = await encryptPayload(wumbral, payload, bobData);
 
 
-    console.log("after encrypt payload: ", ciphertext, capsule, fragments);
-
-    const kFragForBob = await encryptKfragsUsingUrsula(fragments);
-    const kFragForReader = await encryptKfragsUsingUrsula(
-      newAliceFragments
-    );
-    
-    const dataToPass = {
-      appName: payload?.appName,
-      replicaCount: payload?.replicaCount,
-      lastUpdateDate: payload?.lastUpdateDate,
-      aliceKeys,
-      encryptionUint8Array: ciphertext,
-      capsule,
-      fragments,
-      umbralBobPKList: umbralBobPKList,
-      newAliceFragments,
-      selectedNft: appData.nftID,
-      resourceArray: Object.values(payload?.resourceLimits).map((a) => Number(a.slice(0, -1))),
-      kFragForBob,
-      kFragForReader
-    };
-
-    console.log("data to pass: ", dataToPass);
-
+    console.log("encryptData: ", encryptData);
     console.log("appData: ", payload);
 
-    const payloadResponse = await uploadPayloadOnIpfs(dataToPass);
+    const payloadResponse = await sendToIPFS(appData.nftID, appData.appName, encryptData);
 
     console.log("payloadResponse: ", payloadResponse.toString());
 

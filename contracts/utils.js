@@ -1,6 +1,26 @@
 import base58 from "bs58";
 import { Buffer } from "buffer";
 
+const RESOURCE_NAME_LIST = [
+  'CPU_Standard',
+  'CPU_Intensive',
+  'GPU_Standard'
+];
+
+const TAB_LIST = [
+  "nft",
+  "dashboard",
+  "app",
+  'updateApp'
+];
+
+const TAB_NAME_ID = {
+  NFT_DASH: 0,
+  APP_DASH: 1,
+  APP_FORM: 2,
+  UPDATE_APP_FORM: 3
+};
+
 const readByte32 =
   "0x917ec7ea41e5f357223d15148fe9b320af36ca576055af433ea3445b39221799";
 const deployerByte32 =
@@ -60,5 +80,8 @@ export {
   accessManagerByte32,
   billingManagerByte32,
   contractBasedDeploymentByte32,
-  ROLE
+  ROLE,
+  RESOURCE_NAME_LIST,
+  TAB_LIST,
+  TAB_NAME_ID
 };

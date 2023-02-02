@@ -2,8 +2,63 @@ import { Button, Form, Input, Select, Checkbox, Switch} from "antd";
 import all from 'it-all';
 import React, { useEffect, useState } from 'react';
 import {deployApp, getPublicKey} from './lib/deployApp';
-import { getAppsOfNFT, getClustersOfSubnet, subscribeAndCreateData, fetchAddressAndContracts } from '../../contracts/SmartContractFunctions';
+import { getAppsOfNFT, getClustersOfSubnet, createApp, updateApp, getUserSubscription } from '../../contracts/SmartContractFunctions';
 import styles from './styles/appForm.module.css';
+import {RESOURCE_NAME_LIST, convertIPFSHash} from '../../contracts/utils';
+
+
+export const formatIPFSDataForUI = async (app, ipfsData, nftID) => {
+    let appData = {}
+    appData.appName = app.appName;
+    appData.imageName = ipfsData.image.repository;
+    appData.tag = ipfsData.image.tag;
+
+    const userSub = await getUserSubscription({nftID, subnetID: app.subnetList[0]});
+    appData.referralAddress = userSub.referralAddress;
+    appData.licenseAddress = userSub.licenseAddress;
+    appData.supportAddress = userSub.supportAddress;
+    appData.platformAddress = userSub.platformAddress;
+    appData.licenseFee = userSub.licenseFee;
+    appData.private = true;
+    appData.cidLock = true;
+
+    let containerPort = JSON.parse(ipfsData.containerPort);
+    let servicePort = JSON.parse(ipfsData.servicePort);
+
+    appData.protocol = containerPort[0].protocol;
+    appData.containerPort = containerPort[0].port;
+    appData.accessPort = servicePort[0].port;
+    appData.hostURL = ipfsData.hostUrl;
+    appData.path = ipfsData.path;
+    
+    for(var i = 0; i < app.subnetList.length; i++)
+    {
+        const subnetID = app.subnetList[i];
+        appData[`subnet${subnetID}`] = true;
+    }
+
+    for(var i = 0; i <app.resourceArray.length; i++)
+    {
+        const resource = app.resourceArray[i];
+        appData[`${RESOURCE_NAME_LIST[i]}`] = resource;
+    }
+
+    const multiplier = app.multiplier;
+    const resourceArray = app.resourceArray;
+    console.log("arrays: ", multiplier, resourceArray);
+    for(var i = 0; i < multiplier.length; i++)
+    {
+        const subnetID = app.subnetList[i];
+        for(var j = 0; j < resourceArray.length; j++)
+        {
+            const resourceName = RESOURCE_NAME_LIST[j];
+            console.log("multiplier val: ", multiplier[i][0], multiplier[i][0][j]);
+            appData[`${resourceName}/${subnetID}`] = multiplier[i][0][j];
+        }
+    }
+
+    return appData;
+}
 
 const BasicInfo = () => {
     return (
@@ -32,10 +87,10 @@ const BasicInfo = () => {
         <Form.Item label="licenseFee" name="licenseFee">
             <Input />
         </Form.Item>
-        <Form.Item label="Private" valuePropName="private">
+        <Form.Item label="Private" name="private" valuePropName='checked'>
           <Switch />
         </Form.Item>
-        <Form.Item label="Software Lock" valuePropName="cidLock">
+        <Form.Item label="Software Lock" name="cidLock" valuePropName='checked'>
           <Switch />
         </Form.Item>
     </div>
@@ -81,7 +136,7 @@ const SubnetInfo = ({subnets, selectSubnet}) => {
             const subnetID = subnetList[index];
             const switchName = 'subnet'+subnetID;
             return (
-                <Form.Item label={subnetName} name={switchName}>
+                <Form.Item label={subnetName} name={switchName} valuePropName='checked'>
                     <Switch onChange={(e) => {
                         selectSubnet(index, e);
                     }}/>
@@ -103,7 +158,7 @@ const SubnetInfo = ({subnets, selectSubnet}) => {
     );
 }
 
-const ResourcesInfo = ({resourceNameList, selectedSubnetList, subnets}) => {
+const ResourcesInfo = ({selectedSubnetList, subnets}) => {
 
     const [subnetList, setSubnetList] = useState([]);
     const [subnetNames, setSubnetNameList] = useState([]);
@@ -118,7 +173,6 @@ const ResourcesInfo = ({resourceNameList, selectedSubnetList, subnets}) => {
                 subnets.subnetNameList.filter((_, index) => selectedSubnetList[index])
             );
             
-            console.log("subnet names in resource: ",  subnets.subnetNameList.map((_, index) => selectedSubnetList[index]));
         },
         [selectedSubnetList]
     )
@@ -133,7 +187,7 @@ const ResourcesInfo = ({resourceNameList, selectedSubnetList, subnets}) => {
         })
     }
     const displayResources = () => {
-        return resourceNameList.map(resourceName => {
+        return RESOURCE_NAME_LIST.map(resourceName => {
             return (
                 <Form.Item label={resourceName} name={resourceName}>
                     <Form.Item name={resourceName}>
@@ -180,13 +234,7 @@ const DripRateForm = () => {
     );
 }
 
-const AppForm = ({umbral, formValues, subnets, isUpdate, selectedNFT}) => {
-
-    const resourceNameList = [
-        'CPU_Standard',
-        'CPU_Intensive',
-        'GPU_Standard'
-    ];
+export const AppForm = ({umbral, formValues, subnets, isUpdate, selectedNFT, appList, setAppList}) => {
 
 
     const [form] = Form.useForm();
@@ -199,11 +247,23 @@ const AppForm = ({umbral, formValues, subnets, isUpdate, selectedNFT}) => {
     }
 
     const getBobKeys = async (subnetList) => {
-        const data = await getClustersOfSubnet(subnetList[0]);
-        let publicKeyList = data.map(cluster => new Uint8Array(cluster.publicKey));
-        console.log("data: ", publicKeyList);
-        // setBobKeyList(publicKeyList);
-        return publicKeyList;
+        const bobData = {};
+        
+        bobData.subnetList = subnetList;
+        for(var i = 0; i < subnetList.length; i++)
+        {
+            const subnetID = subnetList[i];
+            const data = await getClustersOfSubnet(subnetID);
+            let publicKeyList = data.map(cluster => new Uint8Array(cluster.publicKey));
+            let clusterIDList = data.map(cluster => cluster.clusterId);
+
+            bobData[subnetID] = {
+                publicKeyList,
+                clusterIDList
+            };
+        }
+
+        return bobData;
     }
 
 
@@ -214,7 +274,7 @@ const AppForm = ({umbral, formValues, subnets, isUpdate, selectedNFT}) => {
         let resourceArray = [];
         let multiplier = [];
         let licenseFeeList = [];
-
+    
         const subnetIDList = subnets.subnetList;
         for(var i = 0; i < subnetIDList.length; i++)
         {
@@ -224,10 +284,10 @@ const AppForm = ({umbral, formValues, subnets, isUpdate, selectedNFT}) => {
                 subnetList.push(subnetID);
             }
         }
-
-        for(var j = 0; j < resourceNameList.length; j++)
+    
+        for(var j = 0; j < RESOURCE_NAME_LIST.length; j++)
         {
-            const resourceName = resourceNameList[j];
+            const resourceName = RESOURCE_NAME_LIST[j];
             
             if(values[resourceName] && Number(values[resourceName]) > 0)
             {
@@ -239,14 +299,14 @@ const AppForm = ({umbral, formValues, subnets, isUpdate, selectedNFT}) => {
                 resourceArray.push(0);
             }
         }
-
+    
         for(var i = 0; i < subnetList.length; i++)
         {
             const subnetID = subnetList[i];
             let curMultiplier = [];
-            for(var j = 0; j < resourceNameList.length; j++)
+            for(var j = 0; j < RESOURCE_NAME_LIST.length; j++)
             {
-                const resourceName = resourceNameList[j];
+                const resourceName = RESOURCE_NAME_LIST[j];
                 if(resourceArray[j] > 0 && values[`${resourceName}/${subnetID}`] && Number(values[`${resourceName}/${subnetID}`]) > 0)
                 {
                     curMultiplier.push( Number(values[`${resourceName}/${subnetID}`]));
@@ -257,7 +317,7 @@ const AppForm = ({umbral, formValues, subnets, isUpdate, selectedNFT}) => {
             }
             multiplier.push([curMultiplier]);
         }
-
+    
         rlsAddressList = [
             [],
             [],
@@ -271,26 +331,16 @@ const AppForm = ({umbral, formValues, subnets, isUpdate, selectedNFT}) => {
             rlsAddressList[2].push(values.supportAddress);
             rlsAddressList[3].push(values.platformAddress);
         }
-
+    
         for(var i = 0; i < subnetList.length; i++)
         {
             licenseFeeList.push(Number(values.licenseFee));
         }
-        // let rlsAddressList = [];
-        // let subnetList = [];
-        // let resourceArray = [];
-        // let multiplier = [];
-
-        // console.log("rlsAddress: ", rlsAddressList);
-        // console.log("subnetList: ", subnetList);
-        // console.log("resourcArray: ", resourceArray);
-        // console.log("multiplier: ", multiplier);
-        
-
-        // appName = window.btoa(values.appName);
+    
+    
         appName = values.appName;
-        console.log("appName; ", values.appName, appName);
-
+        values.nftID = selectedNFT;
+    
         return {
             ...values,
             balanceToAdd: 0,
@@ -305,49 +355,19 @@ const AppForm = ({umbral, formValues, subnets, isUpdate, selectedNFT}) => {
             lastUpdateTime: '',
             cidLock: values.cidLock
         }
-        // await subscribeAndCreateData(
-        //     balanceToAdd,
-        //     nftId,
-        //     rlsAddresses,
-        //     licenseFee,
-        //     appName,
-        //     cid,
-        //     subnetIdList,
-        //     multiplier,
-        //     resources,
-        //     lastUpdateTime,
-        //     cidLock
-        //   );
     }
-
+    
     const createApplication = async (values) => {
-        console.log("onFinish clicked: ", JSON.stringify(values));
-        // const cid = 'QmceZRvJMsoi33kMyYv5o7AsF1rri5tQiHt2fg7JBTLHXH';
 
         const formatParams = formatParamsForCreateApp(values);
-        formatParams.nftID = selectedNFT;
 
 
-        let bobKeyList = await getBobKeys(formatParams.subnetList);
-        const CID = await deployApp(umbral, formatParams, bobKeyList);
+        const bobData = await getBobKeys(formatParams.subnetList);
+        const CID = await deployApp(umbral, formatParams, bobData);
         
         formatParams.CID = CID;
 
-        console.log("params to send: ",
-        formatParams.balanceToAdd,
-        formatParams.nftID,
-        formatParams.rlsAddressList,
-        formatParams.licenseFeeList,
-        formatParams.appName,
-        formatParams.CID,
-        formatParams.subnetList,
-        formatParams.multiplier,
-        formatParams.resourceArray,
-        formatParams.lastUpdateTime,
-        formatParams.cidLock
-        );
-
-        await subscribeAndCreateData(
+        await createApp(
             formatParams.balanceToAdd,
             formatParams.nftID,
             formatParams.rlsAddressList,
@@ -362,10 +382,64 @@ const AppForm = ({umbral, formValues, subnets, isUpdate, selectedNFT}) => {
           );
     }
 
+
+    const updateApplication = async (values) => {
+        const formatParams = formatParamsForCreateApp(values);
+
+        const bobData = await getBobKeys(formatParams.subnetList);
+        const CID = await deployApp(umbral, formatParams, bobData);
+
+        formatParams.CID = CID;
+
+ 
+        await updateApp(
+            formatParams.balanceToAdd,
+            formatParams.nftID,
+            formatParams.rlsAddressList,
+            formatParams.licenseFeeList,
+            formatParams.appName,
+            formatParams.CID,
+            formatParams.subnetList,
+            formatParams.multiplier,
+            formatParams.resourceArray,
+            formatParams.lastUpdateTime
+          );
+
+        const curApp = appList.find(app => app.appName == formatParams.appName);
+        
+        const { digest, hashFunction, size } = convertIPFSHash(formatParams.CID);
+
+        const updatedApp = 
+        {
+            appID: Number(curApp.appID),
+            appName: curApp.appName,
+            digest: digest,
+            hashFunction: hashFunction,
+            size: size,
+            subnetList: formatParams.subnetList,
+            resourceArray: formatParams.resourceArray,
+            lastUpdatedTime: formatParams.lastUpdatedTime,
+            cidLock: curApp.cidLock,
+            multiplier: formatParams.multiplier,
+            cid: formatParams.CID
+        }
+
+        for(var i = 0; i < appList.length; i++)
+        {
+            if(appList[i].appName == updatedApp.appName)
+            {
+                appList[i] = updatedApp;
+            }
+        }
+
+        setAppList([...appList]);
+    }
+
     const onFinish = async (values) => {
         if(isUpdate)
         {
-
+            updateApplication(values);
+            console.log("is update app: ");
         }
         else {
             createApplication(values);
@@ -376,6 +450,23 @@ const AppForm = ({umbral, formValues, subnets, isUpdate, selectedNFT}) => {
 
     }
 
+
+    useEffect(
+        () => {
+            const formSubnetData = {}
+            const subnetList = subnets.subnetList;
+            for(var i = 0; i < subnetList.length; i++)
+            {
+                const subnetID = subnetList[i];
+                if(formValues[`subnet${subnetID}`])
+                {
+                    formSubnetData[i] = true;
+                }
+            }
+
+            setSelectedSubnetList(formSubnetData);
+        }
+    ,[formValues])
 
     return (
         <>
@@ -391,7 +482,7 @@ const AppForm = ({umbral, formValues, subnets, isUpdate, selectedNFT}) => {
                 <BasicInfo/>
                 <ContainerInfo/>
                 <SubnetInfo subnets={subnets} selectSubnet={selectSubnet}/>
-                <ResourcesInfo resourceNameList={resourceNameList} selectedSubnetList={selectedSubnetList} subnets={subnets}/>
+                <ResourcesInfo selectedSubnetList={selectedSubnetList} subnets={subnets}/>
                 <DripRateForm/>
             </div>
             <div>
@@ -402,5 +493,3 @@ const AppForm = ({umbral, formValues, subnets, isUpdate, selectedNFT}) => {
 
       );
 };
-
-export default AppForm;
