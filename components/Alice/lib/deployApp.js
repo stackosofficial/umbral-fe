@@ -200,7 +200,7 @@ export async function deployApp(wumbral, appData, bobData)
 {
 
     console.log("container port: ", appData.containerPort, appData.accessPort, appData.nftID);
-    let hostURL = `${appData.appName}-${appData.nftID}-marvel.stackos.io`;
+    let hostURL = `${appData.appName}-n${appData.nftID}`;
     let payload = {
         "appName": appData.appName,
         "hostUrl": hostURL,
@@ -215,7 +215,7 @@ export async function deployApp(wumbral, appData, bobData)
             "0.0.0.0/0"
         ],
         "replicaCount": "1",
-        "namespace": "0x3c904a5f23f868f309a6db2a428529f33848f517",
+        "namespace": `n${appData.nftID}`,
         "resourceLimits": {
             "memory": "100M",
             "cpu": "100m"

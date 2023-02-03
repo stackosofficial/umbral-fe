@@ -41,7 +41,6 @@ export const readFile = async (path) => {
   console.log('path ', path);
   let data = await all(ipfsConfig.cat(path));
 
-
   let length = 0;
   data.forEach(item => {
     length += item.length;
@@ -136,7 +135,7 @@ export const uploadIpfsDataIntoCache = async (appList, selectedNFT) => {
 
             if(CID != contractCID)
             {
-              console.log("cid not equal: ", cachedCID, contractCID);
+              console.log("cid not equal: ", CID, contractCID);
                 callIPFSFlag = true;
             }
         }
