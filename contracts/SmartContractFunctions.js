@@ -1,21 +1,21 @@
-import Web3 from 'web3';
-import AppNFT from './ABIs/AppNFT';
-import ContractBasedDeployment from './ABIs/ContractBasedDeployment';
-import DarkMatterNFT from './ABIs/DarkMatterNFT';
-import Registration from './ABIs/Registration';
-import Stack from './ABIs/Stack';
-import Subscription from './ABIs/Subscription';
-import XCT from './ABIs/XCT';
-import RoleControl from './ABIs/RoleControl';
-import SubscriptionBalance from './ABIs/SubscriptionBalance';
-import SubscriptionDao from './ABIs/SubscriptionDao';
-import SubscriptionBalanceCalculator from './ABIs/SubscriptionBalanceCalculator';
-import XCTMinter from './ABIs/XCTMinter';
+import Web3 from "web3";
+import AppNFT from "./ABIs/AppNFT";
+import ContractBasedDeployment from "./ABIs/ContractBasedDeployment";
+import DarkMatterNFT from "./ABIs/DarkMatterNFT";
+import Registration from "./ABIs/Registration";
+import Stack from "./ABIs/Stack";
+import Subscription from "./ABIs/Subscription";
+import XCT from "./ABIs/XCT";
+import RoleControl from "./ABIs/RoleControl";
+import SubscriptionBalance from "./ABIs/SubscriptionBalance";
+import SubscriptionDao from "./ABIs/SubscriptionDao";
+import SubscriptionBalanceCalculator from "./ABIs/SubscriptionBalanceCalculator";
+import XCTMinter from "./ABIs/XCTMinter";
 import {
   convertCommaStringToArray,
   convertIPFSHash,
   getIPFSHash,
-} from './utils';
+} from "./utils";
 
 let selectedAccount,
   defaultOptions,
@@ -37,9 +37,9 @@ let selectedAccount,
 
 const fetchAddressAndContracts = new Promise(async (resolve, reject) => {
   let provider = window.ethereum;
-  if (typeof provider !== 'undefined') {
+  if (typeof provider !== "undefined") {
     provider
-      .request({ method: 'eth_requestAccounts' })
+      .request({ method: "eth_requestAccounts" })
       .then((accounts) => {
         selectedAccount = accounts[0];
         console.log(`Selected account is ${selectedAccount}`);
@@ -49,33 +49,30 @@ const fetchAddressAndContracts = new Promise(async (resolve, reject) => {
         return;
       });
   }
-  window.ethereum.on('accountsChanged', function (accounts) {
+  window.ethereum.on("accountsChanged", function (accounts) {
     selectedAccount = accounts[0];
     console.log(`Selected account changed to ${selectedAccount}`);
   });
   web3 = new Web3(provider);
   networkId = await web3.eth.net.getId();
-  console.log('network id : ', networkId);
+  console.log("network id : ", networkId);
 
   defaultOptions = { from: selectedAccount };
 
-  const contractAddresses =
-  {
-    deployer: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
-    xct: '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0',
-    stack: '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9',
-    nftToken: '0x5FC8d32690cc91D4c39d9d3abcBD16989F875707',
-    Registration: '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853',
-    appNFT: '0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6',
-    RoleControl: '0x610178dA211FEF7D417bC0e6FeD39F05609AD788',
-    SubscriptionBalanceCalculator: '0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0',
-    SubscriptionBalance: '0x9A676e781A523b5d0C0e43731313A708CB607508',
-    SubnetDAODistributor: '0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1',
-    Subscription: '0x68B1D87F95878fE05B998F19b66F4baba5De1aed',
-    ContractBasedDeployment: '0xc6e7DF5E7b4f2A278906862b61205850344D4e7d'
-  }
-  ;
-
+  const contractAddresses = {
+    deployer: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    xct: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+    stack: "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+    nftToken: "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+    Registration: "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+    appNFT: "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+    RoleControl: "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
+    SubscriptionBalanceCalculator: "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+    SubscriptionBalance: "0x9A676e781A523b5d0C0e43731313A708CB607508",
+    SubnetDAODistributor: "0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1",
+    Subscription: "0x68B1D87F95878fE05B998F19b66F4baba5De1aed",
+    ContractBasedDeployment: "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d",
+  };
   DarkMatterNftContract = new web3.eth.Contract(
     DarkMatterNFT,
     contractAddresses.nftToken
@@ -124,7 +121,7 @@ const mintDarkMatterNFT = async (address) => {
   return await sendTransaction(
     true,
     DarkMatterNftContract,
-    'mint',
+    "mint",
     defaultOptions,
     address
   );
@@ -136,7 +133,7 @@ const getListOfOwnedDarkMatterNFT = async (address) => {
   const totalSupply = await sendTransaction(
     false,
     DarkMatterNftContract,
-    'totalSupply',
+    "totalSupply",
     defaultOptions
   );
   let NFTs = [];
@@ -147,7 +144,7 @@ const getListOfOwnedDarkMatterNFT = async (address) => {
         let temp = await sendTransaction(
           false,
           DarkMatterNftContract,
-          'tokenOfOwnerByIndex',
+          "tokenOfOwnerByIndex",
           defaultOptions,
           address,
           i
@@ -167,7 +164,7 @@ const transferDarkMatterNFT = async (from, to, tokenId) => {
   return await sendTransaction(
     true,
     DarkMatterNftContract,
-    'transferFrom',
+    "transferFrom",
     defaultOptions,
     from,
     to,
@@ -179,7 +176,7 @@ const checkDarkMatterApprovedForAll = async (address, operatorAddress) => {
   return await sendTransaction(
     false,
     DarkMatterNftContract,
-    'isApprovedForAll',
+    "isApprovedForAll",
     defaultOptions,
     address,
     operatorAddress
@@ -190,7 +187,7 @@ const setDarkMatterApprovalForAll = async (operatorAddress, boolValue) => {
   return await sendTransaction(
     true,
     DarkMatterNftContract,
-    'setApprovalForAll',
+    "setApprovalForAll",
     defaultOptions,
     operatorAddress,
     boolValue
@@ -205,7 +202,7 @@ const getStackBalance = async (address) => {
   return await sendTransaction(
     false,
     StackContract,
-    'balanceOf',
+    "balanceOf",
     defaultOptions,
     address
   );
@@ -215,7 +212,7 @@ const transferStacks = async (values) => {
   return await sendTransaction(
     true,
     StackContract,
-    'transfer',
+    "transfer",
     defaultOptions,
     values.to,
     values.amount
@@ -226,10 +223,10 @@ const stackApproveForRegistrationContract = async () => {
   return await sendTransaction(
     true,
     StackContract,
-    'approve',
+    "approve",
     defaultOptions,
     RegistrationContract.options.address,
-    '1000000000'
+    "1000000000"
   );
 };
 
@@ -240,7 +237,7 @@ const checkStackAllowanceForRegistrationContract = async () => {
     await sendTransaction(
       false,
       StackContract,
-      'allowance',
+      "allowance",
       defaultOptions,
       selectedAccount,
       RegistrationContract.options.address
@@ -254,7 +251,7 @@ const mintXCT = async (values) => {
   return await sendTransaction(
     true,
     XCTContract,
-    'mint',
+    "mint",
     defaultOptions,
     values.address,
     values.amount
@@ -267,7 +264,7 @@ const getXCTBalance = async (address) => {
   return await sendTransaction(
     false,
     XCTContract,
-    'balanceOf',
+    "balanceOf",
     defaultOptions,
     address
   );
@@ -277,7 +274,7 @@ const transferXCT = async (values) => {
   return await sendTransaction(
     true,
     XCTContract,
-    'transfer',
+    "transfer",
     defaultOptions,
     values.to,
     values.amount
@@ -288,10 +285,10 @@ const xctApproveForSubscriptionContract = async () => {
   return await sendTransaction(
     true,
     XCTContract,
-    'approve',
+    "approve",
     defaultOptions,
     SubscriptionContract.options.address,
-    '100000000'
+    "100000000"
   );
 };
 
@@ -299,10 +296,10 @@ const xctApproveForSubscriptionBalanceContract = async () => {
   return await sendTransaction(
     true,
     XCTContract,
-    'approve',
+    "approve",
     defaultOptions,
     SubscriptionBalanceContract.options.address,
-    '100000000'
+    "100000000"
   );
 };
 
@@ -313,7 +310,7 @@ const checkXCTAllowanceForSubscriptionContract = async () => {
     await sendTransaction(
       false,
       XCTContract,
-      'allowance',
+      "allowance",
       defaultOptions,
       selectedAccount,
       SubscriptionContract.options.address
@@ -328,7 +325,7 @@ const checkXCTAllowanceForSubscriptionBalanceContract = async () => {
     await sendTransaction(
       false,
       XCTContract,
-      'allowance',
+      "allowance",
       defaultOptions,
       selectedAccount,
       SubscriptionBalanceContract.options.address
@@ -343,7 +340,7 @@ const getAllSubnets = async () => {
   const totalSubnets = await sendTransaction(
     false,
     RegistrationContract,
-    'totalSubnets',
+    "totalSubnets",
     defaultOptions
   );
   let Subnets = [];
@@ -351,7 +348,7 @@ const getAllSubnets = async () => {
     const temp = await sendTransaction(
       false,
       RegistrationContract,
-      'getSubnetAttributes',
+      "getSubnetAttributes",
       defaultOptions,
       i
     );
@@ -413,7 +410,7 @@ const createSubnet = async (data) => {
   return await sendTransaction(
     true,
     RegistrationContract,
-    'createSubnet',
+    "createSubnet",
     defaultOptions,
     data.nftId,
     data.subnetLocalDao,
@@ -434,7 +431,7 @@ const createCluster = async (values) => {
   return await sendTransaction(
     true,
     RegistrationContract,
-    'clusterSignUp',
+    "clusterSignUp",
     defaultOptions,
     values.subnetId,
     values.dnsIp,
@@ -453,12 +450,12 @@ const getClustersOfSubnet = async (subnetId) => {
       let clusterAttribute = await sendTransaction(
         false,
         RegistrationContract,
-        'getClusterAttributes',
+        "getClusterAttributes",
         defaultOptions,
         subnetId,
         i
       );
-      if (clusterAttribute[0] === '0x0000000000000000000000000000000000000000')
+      if (clusterAttribute[0] === "0x0000000000000000000000000000000000000000")
         break;
       else {
         clustersOfSubnet.push({
@@ -486,7 +483,7 @@ const getClustersOfAllSubnets = async () => {
   let totalSubnets = await sendTransaction(
     false,
     RegistrationContract,
-    'totalSubnets',
+    "totalSubnets",
     defaultOptions
   );
   let subnets = [];
@@ -513,7 +510,7 @@ const changeDNSIPOfCluster = async (values) => {
   return await sendTransaction(
     true,
     RegistrationContract,
-    'changeDNSIP',
+    "changeDNSIP",
     defaultOptions,
     values.subnetId,
     values.clusterId,
@@ -525,7 +522,7 @@ const transferClusterOwnership = async (values) => {
   return await sendTransaction(
     true,
     RegistrationContract,
-    'transferClusterOwnership',
+    "transferClusterOwnership",
     defaultOptions,
     values.subnetId,
     values.clusterId,
@@ -539,7 +536,7 @@ const changeSubnetAttribute = async (values) => {
   return await sendTransaction(
     true,
     RegistrationContract,
-    'changeSubnetAttributes',
+    "changeSubnetAttributes",
     defaultOptions,
     values.subnetId,
     values.attributeNo,
@@ -568,7 +565,7 @@ const getSubnetsOfNFT = async (nftId) => {
       let temp = await sendTransaction(
         false,
         SubscriptionContract,
-        'subscribedSubnetsOfNFT',
+        "subscribedSubnetsOfNFT",
         defaultOptions,
         nftId,
         i
@@ -584,7 +581,7 @@ const getSubnetsOfNFT = async (nftId) => {
       let temp = await sendTransaction(
         false,
         SubscriptionContract,
-        'unsubscribedSubnetsOfNFT',
+        "unsubscribedSubnetsOfNFT",
         defaultOptions,
         nftId,
         j
@@ -606,7 +603,7 @@ const subscribeSubnet = async (values) => {
   return await sendTransaction(
     true,
     SubscriptionContract,
-    'subscribeBatch',
+    "subscribeBatch",
     defaultOptions,
     values.subscriber,
     values.isExisting,
@@ -638,7 +635,7 @@ const getDripRateOfSubnet = async (nftId, subnetId) => {
   const dripRate = await sendTransaction(
     false,
     SubscriptionBalanceContract,
-    'dripRatePerSecOfSubnet',
+    "dripRatePerSecOfSubnet",
     defaultOptions,
     nftId,
     subnetId
@@ -646,160 +643,156 @@ const getDripRateOfSubnet = async (nftId, subnetId) => {
   return Number(dripRate);
 };
 
-    //    uint256 supportFee,
-    //     uint256 platformFee,
-    //     uint256 referralFee,
-    //     uint256 discountFee,
-    //     uint256 licenseFee,
-    const getSubscribedSubnetsOfNFT = async (values) => {
-      let subscribedSubnets = await sendTransaction(
-        false,
-        SubscriptionContract,
-        "getSubscribedSubnetsOfNFT",
-        defaultOptions,
-        values.nftID,
-      );
-    
-      subscribedSubnets = subscribedSubnets[0].map(subnet => Number(subnet));
-    
-      return subscribedSubnets;
-    };
-    
-    
-    const getPlatformData = async (values) => {
-      const platformData = await sendTransaction(
-        false,
-        SubscriptionContract,
-        "platformAddressMap",
-        defaultOptions,
-        values.platformAddress
-      );
-      return platformData;
-    };
-    
-    const getPlatformPercent = async (values) => {
-      const referralPercent = await sendTransaction(
-        false,
-        SubscriptionContract,
-        "v_platformPercent",
-        defaultOptions,
-        values.nftID,
-        values.subnetID
-      );
-      return Number(referralPercent);
-    };
-    
-    
-    const getSupportFeesForNFT = async (values) => {
-      const supportFees = await sendTransaction(
-        false,
-        SubscriptionContract,
-        "getSupportFeesForNFT",
-        defaultOptions,
-        values.supportAddress,
-        values.nftID
-      );
-      return Number(supportFees);
-    };
-    
-    const getUserSubscription = async (values) => {
-      const userSubscription = await sendTransaction(
-        false,
-        SubscriptionContract,
-        "userSubscription",
-        defaultOptions,
-        values.nftID,
-        values.subnetID
-      );
-    
-      return userSubscription;
-    }
-    
-    const getSubscriptionComputes = async (values) => {
-      const userSubscription = await sendTransaction(
-        false,
-        SubscriptionContract,
-        "getComputesOfSubnet",
-        defaultOptions,
-        values.nftID,
-        values.subnetID
-      );
-    
-      return userSubscription;
-    }
-    
-      const getAllSubnetID = async () => {
-        console.log("before send transaction");
-        const subnetList = await sendTransaction(
-          false,
-          RegistrationContract,
-          "getAllSubnetNamesAndIDs",
-          defaultOptions
-        );
-        console.log("after send transaction");
-      // address referralAddress;
-      // address licenseAddress;
-      // address supportAddress;
-      // address platformAddress;
-      // uint256 licenseFee;
-      // uint256 supportPercentage;
-      // uint256[] computeRequired;
-      // bool subscribed;
-      // uint256 subnetArrayID;
-      // uint256 createTime;
-      // return 
-      // {
-      //   referralAddress: userSubscription.referralAddress,
-      //   licenseAddress: userSubscription.licenseAddress,
-      //   supportAddress: userSubscription.licenseAddress,
-      //   platformAddres
-      // };
-    
-      return subnetList;
-    };
-    
-    
-    const estimateDripRateforSubnet = async (values) => {
-      // uint256[] memory _subnetId,
-      // uint256[] memory _supportFee,
-      // uint256[] memory _platformFee,
-      // uint256[] memory _referralFee,
-      // uint256[] memory _discountFee,
-      // uint256[] memory _licenseFee,
-      // uint256[][] memory _computeRequired
-      const dripRate = await sendTransaction(
-        false,
-        SubscriptionBalanceContract,
-        "estimateDripRatePerSec",
-        defaultOptions,
-        values.subnetList,
-        values.supportFeeList,
-        values.platformFeeList,
-        values.referralPercentList,
-        values.discountList,
-        values.licenseList,
-        values.computeList
-      );
-      return Number(dripRate);
-    };
-    
-    const getNFTBalance = async (nftID) => {
-      const balance = await sendTransaction(
-        false,
-        SubscriptionBalanceContract,
-        "totalPrevBalance",
-        defaultOptions,
-        nftID
-      );
-      return Number(balance);
-    };
-    
+//    uint256 supportFee,
+//     uint256 platformFee,
+//     uint256 referralFee,
+//     uint256 discountFee,
+//     uint256 licenseFee,
+const getSubscribedSubnetsOfNFT = async (values) => {
+  let subscribedSubnets = await sendTransaction(
+    false,
+    SubscriptionContract,
+    "getSubscribedSubnetsOfNFT",
+    defaultOptions,
+    values.nftID
+  );
+
+  subscribedSubnets = subscribedSubnets[0].map((subnet) => Number(subnet));
+
+  return subscribedSubnets;
+};
+
+const getPlatformData = async (values) => {
+  const platformData = await sendTransaction(
+    false,
+    SubscriptionContract,
+    "platformAddressMap",
+    defaultOptions,
+    values.platformAddress
+  );
+  return platformData;
+};
+
+const getPlatformPercent = async (values) => {
+  const referralPercent = await sendTransaction(
+    false,
+    SubscriptionContract,
+    "v_platformPercent",
+    defaultOptions,
+    values.nftID,
+    values.subnetID
+  );
+  return Number(referralPercent);
+};
+
+const getSupportFeesForNFT = async (values) => {
+  const supportFees = await sendTransaction(
+    false,
+    SubscriptionContract,
+    "getSupportFeesForNFT",
+    defaultOptions,
+    values.supportAddress,
+    values.nftID
+  );
+  return Number(supportFees);
+};
+
+const getUserSubscription = async (values) => {
+  const userSubscription = await sendTransaction(
+    false,
+    SubscriptionContract,
+    "userSubscription",
+    defaultOptions,
+    values.nftID,
+    values.subnetID
+  );
+
+  return userSubscription;
+};
+
+const getSubscriptionComputes = async (values) => {
+  const userSubscription = await sendTransaction(
+    false,
+    SubscriptionContract,
+    "getComputesOfSubnet",
+    defaultOptions,
+    values.nftID,
+    values.subnetID
+  );
+
+  return userSubscription;
+};
+
+const getAllSubnetID = async () => {
+  console.log("before send transaction");
+  const subnetList = await sendTransaction(
+    false,
+    RegistrationContract,
+    "getAllSubnetNamesAndIDs",
+    defaultOptions
+  );
+  console.log("after send transaction");
+  // address referralAddress;
+  // address licenseAddress;
+  // address supportAddress;
+  // address platformAddress;
+  // uint256 licenseFee;
+  // uint256 supportPercentage;
+  // uint256[] computeRequired;
+  // bool subscribed;
+  // uint256 subnetArrayID;
+  // uint256 createTime;
+  // return
+  // {
+  //   referralAddress: userSubscription.referralAddress,
+  //   licenseAddress: userSubscription.licenseAddress,
+  //   supportAddress: userSubscription.licenseAddress,
+  //   platformAddres
+  // };
+
+  return subnetList;
+};
+
+const estimateDripRateforSubnet = async (values) => {
+  // uint256[] memory _subnetId,
+  // uint256[] memory _supportFee,
+  // uint256[] memory _platformFee,
+  // uint256[] memory _referralFee,
+  // uint256[] memory _discountFee,
+  // uint256[] memory _licenseFee,
+  // uint256[][] memory _computeRequired
+  const dripRate = await sendTransaction(
+    false,
+    SubscriptionBalanceContract,
+    "estimateDripRatePerSec",
+    defaultOptions,
+    values.subnetList,
+    values.supportFeeList,
+    values.platformFeeList,
+    values.referralPercentList,
+    values.discountList,
+    values.licenseList,
+    values.computeList
+  );
+  return Number(dripRate);
+};
+
+const getNFTBalance = async (nftID) => {
+  const balance = await sendTransaction(
+    false,
+    SubscriptionBalanceContract,
+    "totalPrevBalance",
+    defaultOptions,
+    nftID
+  );
+  return Number(balance);
+};
 
 const updateBalance = async (nftId) => {
   return await sendTransaction(
     true,
     SubscriptionBalanceContract,
-    'updateBalance',
+    "updateBalance",
     defaultOptions,
     nftId
   );
@@ -809,7 +802,7 @@ const getAppNFTBalance = async (nftId) => {
   return await sendTransaction(
     false,
     SubscriptionBalanceContract,
-    'prevBalances',
+    "prevBalances",
     defaultOptions,
     nftId
   );
@@ -821,7 +814,7 @@ const collectRevenueForAddress = async (address) => {
   return await sendTransaction(
     true,
     SubscriptionDaoContract,
-    'claimAllRevenueFor',
+    "claimAllRevenueFor",
     defaultOptions,
     address
   );
@@ -831,7 +824,7 @@ const assignRevenueForSubnet = async (subnetId) => {
   return await sendTransaction(
     true,
     SubscriptionDaoContract,
-    'collectAndAssignRevenues',
+    "collectAndAssignRevenues",
     defaultOptions,
     subnetId
   );
@@ -844,7 +837,7 @@ const receiveRevenueForAddress = async (addresses) => {
   return await sendTransaction(
     true,
     SubscriptionBalanceCalculatorContract,
-    'receiveRevenueForAddressBulk',
+    "receiveRevenueForAddressBulk",
     defaultOptions,
     addresses
   );
@@ -854,7 +847,7 @@ const receiveRevenueForAddress = async (addresses) => {
 
 const getTotalAppNFT = async () => {
   return Number(
-    await sendTransaction(false, AppNFTContract, 'totalSupply', defaultOptions)
+    await sendTransaction(false, AppNFTContract, "totalSupply", defaultOptions)
   );
 };
 
@@ -868,7 +861,7 @@ const getListOfOwnedAppNFT = async (address) => {
       let temp = await sendTransaction(
         false,
         AppNFTContract,
-        'tokenOfOwnerByIndex',
+        "tokenOfOwnerByIndex",
         defaultOptions,
         address,
         i
@@ -887,7 +880,7 @@ const mintAppNFT = async (address) => {
   return await sendTransaction(
     true,
     AppNFTContract,
-    'mint',
+    "mint",
     defaultOptions,
     address
   );
@@ -897,7 +890,7 @@ const transferAppNFt = async (from, to, tokenId) => {
   return await sendTransaction(
     true,
     AppNFTContract,
-    'transferFrom',
+    "transferFrom",
     defaultOptions,
     from,
     to,
@@ -919,7 +912,7 @@ const grantRole = async ({ nftId, role, address }) => {
   return await sendTransaction(
     true,
     RoleControlContract,
-    'grantRole',
+    "grantRole",
     defaultOptions,
     nftId,
     role,
@@ -933,15 +926,15 @@ const getAccountRoles = async (address) => {
   let data = await sendTransaction(
     false,
     RoleControlContract,
-    'getAllRolesFromAccount',
+    "getAllRolesFromAccount",
     defaultOptions,
     address
   );
   data = data.filter(
     (t) =>
       t.role !==
-        '0x0000000000000000000000000000000000000000000000000000000000000000' &&
-      t.nftID !== '0'
+        "0x0000000000000000000000000000000000000000000000000000000000000000" &&
+      t.nftID !== "0"
   );
   return data;
 };
@@ -950,13 +943,13 @@ const getAccountsWithRole = async (nftId, role) => {
   let Roles = await sendTransaction(
     false,
     RoleControlContract,
-    'getAccountsWithRole',
+    "getAccountsWithRole",
     defaultOptions,
     nftId,
     role
   );
   Roles = Roles.filter(
-    (t) => t !== '0x0000000000000000000000000000000000000000'
+    (t) => t !== "0x0000000000000000000000000000000000000000"
   );
 
   return Roles;
@@ -966,7 +959,7 @@ const removeAppsRole = async (nftId, role, address) => {
   return await sendTransaction(
     true,
     RoleControlContract,
-    'revokeRole',
+    "revokeRole",
     defaultOptions,
     nftId,
     role,
@@ -976,27 +969,26 @@ const removeAppsRole = async (nftId, role, address) => {
 
 // --------------------- ContractBasedDeployment
 
-
 const getAppsOfNFT = async (nftId) => {
   let data = await sendTransaction(
     false,
     ContractBasedDeploymentContract,
-    'getDataArray',
+    "getDataArray",
     defaultOptions,
     nftId
   );
-  data = data.filter(app => app.app.appName !== '');
+  data = data.filter((app) => app.app.appName !== "");
 
-  const appList = data.map(appObj => {
+  const appList = data.map((appObj) => {
     const app = appObj.app;
-    const multiplier = appObj.appSubnets.map(subnetMultiplier =>
-        subnetMultiplier.replicaList.map(replicaList => replicaList.map(
-          replica => Number(replica)
-        ))
-      );
-    
-    const resourceArray = app.resourceArray.map(resource => Number(resource));
-    const subnetList = app.subnetList.map(subnet => Number(subnet));
+    const multiplier = appObj.appSubnets.map((subnetMultiplier) =>
+      subnetMultiplier.replicaList.map((replicaList) =>
+        replicaList.map((replica) => Number(replica))
+      )
+    );
+
+    const resourceArray = app.resourceArray.map((resource) => Number(resource));
+    const subnetList = app.subnetList.map((subnet) => Number(subnet));
     const hashFunction = Number(app.hashFunction);
     const size = Number(app.size);
 
@@ -1011,9 +1003,9 @@ const getAppsOfNFT = async (nftId) => {
       lastUpdatedTime: app.lastUpdatedTime,
       cidLock: app.cidLock,
       multiplier: multiplier,
-      cid: getIPFSHash(app.digest, hashFunction, size)
-    }
-  })
+      cid: getIPFSHash(app.digest, hashFunction, size),
+    };
+  });
 
   console.log("got appList: ", appList);
 
@@ -1024,7 +1016,7 @@ const getMultiplier = async (nftId, appName, subnetId) => {
   return await sendTransaction(
     false,
     ContractBasedDeploymentContract,
-    'appSubnets',
+    "appSubnets",
     defaultOptions,
     nftId,
     appName,
@@ -1036,7 +1028,7 @@ const deleteApp = async (nftId, appName) => {
   return await sendTransaction(
     true,
     ContractBasedDeploymentContract,
-    'deleteApp',
+    "deleteApp",
     defaultOptions,
     nftId,
     appName
@@ -1072,7 +1064,7 @@ const updateApp = async (
   return await sendTransaction(
     true,
     ContractBasedDeploymentContract,
-    'updateApp',
+    "updateApp",
     defaultOptions,
     balanceToAdd,
     nftID,
@@ -1103,11 +1095,15 @@ const createApp = async (
 ) => {
   const { digest, hashFunction, size } = convertIPFSHash(cid);
   const hashAndSize = [hashFunction, size];
-  console.log("before sending transaction, ", appName, ContractBasedDeploymentContract);
+  console.log(
+    "before sending transaction, ",
+    appName,
+    ContractBasedDeploymentContract
+  );
   return await sendTransaction(
     true,
     ContractBasedDeploymentContract,
-    'createApp',
+    "createApp",
     defaultOptions,
     balanceToAdd,
     nftId,
@@ -1129,14 +1125,14 @@ const createApp = async (
 const easyBuyXCT = async (amount) => {
   let options = defaultOptions;
   options.value = amount;
-  return await sendTransaction(true, XCTMinterContract, 'easyBuyXCT', options);
+  return await sendTransaction(true, XCTMinterContract, "easyBuyXCT", options);
 };
 
 const buyXCT = async (tokenAddress, amount) => {
   return await sendTransaction(
     true,
     XCTMinterContract,
-    'buyXCT',
+    "buyXCT",
     defaultOptions,
     tokenAddress,
     amount
@@ -1146,7 +1142,7 @@ const sellXCT = async (value) => {
   return await sendTransaction(
     true,
     XCTMinterContract,
-    'sellXCT',
+    "sellXCT",
     defaultOptions,
     value
   );
@@ -1165,7 +1161,6 @@ const sendTransaction = async (
   if (!selectedAccount) await fetchAddressAndContracts;
   if (isWriteContract) {
     if (!options.from) options.from = selectedAccount;
-
 
     return await contract.methods[method](...params).send(options);
   } else {
@@ -1228,5 +1223,5 @@ export {
   getSubscribedSubnetsOfNFT,
   getAllSubnetID,
   getPlatformData,
-  getSubscriptionComputes
+  getSubscriptionComputes,
 };
