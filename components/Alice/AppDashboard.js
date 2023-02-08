@@ -1,22 +1,26 @@
 import all from 'it-all';
 import React, { useEffect, useState } from 'react';
-import {deployApp, getPublicKey} from './lib/deployApp';
-import { getAppsOfNFT, getClustersOfSubnet, subscribeAndCreateData, fetchAddressAndContracts, getAllSubnets, mintAppNFT, deleteApp } from '../../contracts/SmartContractFunctions';
+import {
+    getAppsOfNFT
+    ,deleteApp
+} from '../../contracts/SmartContractFunctions';
 import styles from './styles/dashboard.module.css';
 import {decryptAppData, login} from './lib/decryptApp';
-import {uploadIpfsDataIntoCache} from './lib/ipfsHash';
+import { uploadIpfsDataIntoCache, deleteAppFromCache } from './lib/ipfs';
 import {TAB_LIST, TAB_NAME_ID} from '../../contracts/utils';
 import {formatIPFSDataForUI} from './AppForm';
+import {ENCRYPT_ARGS} from './constants';
 
 
-const AppDashboard = ({selectedNFT, setCurrentTab, setAppData, nftRole, appList, setAppList, umbral}) => {
+const AppDashboard = ({selectedNFT, setCurrentTab, setAppData, nftRole, appList, setAppList}) => {
 
     const clickDeleteApp = async (app) => {
         await deleteApp(selectedNFT, app.appName);
     }
 
     const openApp = async (app) => {
-        const ipfsAppData = await decryptAppData(app, selectedNFT, nftRole, umbral);
+        const ipfsAppData = await decryptAppData(ENCRYPT_ARGS, app, selectedNFT, nftRole);
+        console.log("ipfsAppData: ", ipfsAppData);
         const appData = await formatIPFSDataForUI(app, ipfsAppData, selectedNFT);
 
         setAppData(appData);
@@ -31,6 +35,7 @@ const AppDashboard = ({selectedNFT, setCurrentTab, setAppData, nftRole, appList,
                 <label>name: {appName}</label>
                 <button onClick={() => openApp(app)}> open</button>
                 <button onClick={() => clickDeleteApp(app)}>Delete</button>
+                <button onClick={() => deleteAppFromCache(selectedNFT, app.appName)}>delete cache</button>
             </div>
         </>
         );

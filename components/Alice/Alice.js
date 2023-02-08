@@ -1,12 +1,12 @@
 import all from 'it-all';
 import React, { useEffect, useState } from 'react';
-import {deployApp, getPublicKey} from './lib/deployApp';
-import {uploadIpfsDataIntoCache} from './lib/ipfsHash';
-import { getAppsOfNFT, getClustersOfSubnet, subscribeAndCreateData, fetchAddressAndContracts, getAllSubnets, getListOfOwnedAppNFT, getAccountRoles } from '../../contracts/SmartContractFunctions';
+import {deployApp, getPublicKey} from './lib/encryptApp';
+import { fetchAddressAndContracts, getAllSubnets } from '../../contracts/SmartContractFunctions';
 import {AppForm} from './AppForm';
 import AppDashboard from './AppDashboard';
 import NFTDashboard from './NFTDashboard';
 import styles from './styles/alice.module.css';
+import { initAppCrypto } from './lib/utils';
 import ETHCrypto from 'eth-crypto';
 import * as sigUtil from '@metamask/eth-sig-util';
 import * as ethUtil from 'ethereumjs-util';
@@ -22,7 +22,7 @@ const Alice = () => {
     licenseAddress: '0x90F79bf6EB2c4f870365E785982E1f101E93b906',
     supportAddress: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
     platformAddress: '0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc',
-    licenseFee: 3000,
+    licenseFee: 1,
     protocol: 'TCP',
     containerPort: '80',
     accessPort: '80',
@@ -32,7 +32,6 @@ const Alice = () => {
     dripRate: '1 day'
   }
 
-  const [umbral, setUmbral] = useState();
   const [subnetList, setSubnetList] = useState([]);
   const [subnetNameList, setSubnetNameList] = useState([]);
   const [currentTab, setCurrentTab] = useState(TAB_LIST[TAB_NAME_ID.NFT_DASH]);
@@ -56,28 +55,16 @@ const getSubnetList = async () => {
   console.log("subnets: ", subnetNameList);
 }
 
-  const loadUmbral = async () => {
-    try {
-       const wumbral = await import('@nucypher/umbral-pre');
-      setUmbral(wumbral);
-      console.log("loaded umbral successfully");
-    }
-    catch(err)
-    {
-      console.log("error loading umbral");
-      console.error(err);
-    }
-  }
-
-
   const getContractData = async () => {
-    await fetchAddressAndContracts;
-    await getSubnetList();
+    if(typeof window.ethereum !== "undefined" || (typeof window.web3 !== "undefined")) {
+      await fetchAddressAndContracts;
+      await getSubnetList();
+    }
   }
 
   useEffect(() => {
     getContractData();
-    loadUmbral();
+    initAppCrypto();
   }, []);
 
 
@@ -115,7 +102,7 @@ const getSubnetList = async () => {
               nftRole={selectedNFTRole} 
               appList={appList} 
               setAppList={setAppList} 
-              umbral={umbral}/>
+            />
               : ''
         }
         {
@@ -126,7 +113,6 @@ const getSubnetList = async () => {
             subnets={{subnetList, subnetNameList}} 
             appList={appList} 
             setAppList={setAppList} 
-            umbral={umbral}
             isUpdate={currentTab==TAB_LIST[TAB_NAME_ID.UPDATE_APP_FORM]}
         />
         : ''}

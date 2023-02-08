@@ -1,7 +1,21 @@
 import all from 'it-all';
-// import { getAppsOfNFT } from '../utils/SmartContractFunctions';
-import { ipfsConfig } from './ipfsConfig';
+import { create } from 'ipfs-http-client';
+import { Buffer } from 'buffer';
 
+const auth =
+  'Basic ' +
+  Buffer.from(
+    '2Fem68edEb9fUr9NO5dWl65uP2Q' + ':' + '0c82ba52279e78ead4cfeb8d3487b8d3'
+  ).toString('base64');
+
+export const ipfsConfig = create({
+  host: 'ipfs.infura.io',
+  port: 5001,
+  protocol: 'https',
+  headers: {
+    authorization: auth,
+  },
+});
 
 export const createIPFSDir = (CID='', nftID, appName, path='') => {
   return `${CID ? CID+'/' : ''}/nftID/${nftID}/app/${appName}${path}`
@@ -76,6 +90,20 @@ export const getAppDataFromCache = async (nftID) => {
   return await getDataFromCache(`NFT-${nftID}`, `AppData-${nftID}`);
 }
 
+export const deleteAppFromCache = async (nftID, appName) => {
+  const encryptedMap = await getEncryptedDataFromCache(nftID);
+  const appMap = await getAppDataFromCache(nftID);
+
+  if(encryptedMap[appName])
+    delete encryptedMap[appName];
+  
+  if(appMap[appName])
+    delete appMap[appName];
+
+  await setEncryptedDataToCache(nftID, encryptedMap);
+  await setAppDataToCache(nftID, appMap);
+}
+
 export const getDataFromIPFS = async(CID, nftID, appName) => {
 
     const cidPrefix = createIPFSDir(CID, nftID, appName);
@@ -102,7 +130,7 @@ export const getDataFromIPFS = async(CID, nftID, appName) => {
     const cipherText = await readFile(
       path.cipherText
     );
-  
+
     return {
         creator,
         reader,
@@ -113,8 +141,6 @@ export const getDataFromIPFS = async(CID, nftID, appName) => {
 
 
 export const uploadIpfsDataIntoCache = async (appList, selectedNFT) => {
-
-    const newCachedEncryptedAppMap = {};
 
     const cachedEncryptedAppMap = await getEncryptedDataFromCache(selectedNFT);
     const cachedAppMap = await getAppDataFromCache(selectedNFT);
@@ -151,7 +177,7 @@ export const uploadIpfsDataIntoCache = async (appList, selectedNFT) => {
             const ipfsData = await getDataFromIPFS(contractCID, selectedNFT, appName);
             ipfsData.CID = contractCID;
 
-            newCachedEncryptedAppMap[appName] = ipfsData;
+            cachedEncryptedAppMap[appName] = ipfsData;
 
           }
           catch(err) {
@@ -159,7 +185,7 @@ export const uploadIpfsDataIntoCache = async (appList, selectedNFT) => {
           }
     
           if(cachedAppMap[appName])
-          delete cachedAppMap[appName];
+            delete cachedAppMap[appName];
         }
     }
 
@@ -167,7 +193,7 @@ export const uploadIpfsDataIntoCache = async (appList, selectedNFT) => {
     {
       await setEncryptedDataToCache(
         selectedNFT,
-        newCachedEncryptedAppMap
+        cachedEncryptedAppMap
       );
   
       await setAppDataToCache(
@@ -204,7 +230,6 @@ export const sendToIPFS = async (nftID, appName, encryptData) => {
   for(var i = 0; i < subnetList.length; i++)
   {
     const subnetID = subnetList[i];
-    console.log("bobKFragMap: ", bobKFragMap);
     const clusterList = bobKFragMap.clusters[subnetID];
     for(var j = 0; j < clusterList.length; j++)
     {
@@ -217,7 +242,6 @@ export const sendToIPFS = async (nftID, appName, encryptData) => {
   }
 
   console.log("pathList: ", pathList);
-  console.log("content list: ", contentList);
 
   let dec = new TextDecoder();
   const pushList = [];

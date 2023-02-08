@@ -60,18 +60,19 @@ const fetchAddressAndContracts = new Promise(async (resolve, reject) => {
   defaultOptions = { from: selectedAccount };
 
   const contractAddresses = {
-    deployer: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-    xct: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
-    stack: "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
-    nftToken: "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
-    Registration: "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
-    appNFT: "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
-    RoleControl: "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
-    SubscriptionBalanceCalculator: "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
-    SubscriptionBalance: "0x9A676e781A523b5d0C0e43731313A708CB607508",
-    SubnetDAODistributor: "0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1",
-    Subscription: "0x68B1D87F95878fE05B998F19b66F4baba5De1aed",
-    ContractBasedDeployment: "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d",
+    deployer: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
+    xct: '0xAa07486C20F73fF4309495411927E6AE7C884DBa',
+    stack: '0xAA2a95A342b774512c64799597bD75389e7d3C7a',
+    nftToken: '0xEd00171E28B55C3ba9bE26a474611755C860E6F0',
+    Registration: '0xBd422978E222C626b94e66f33791a61FbE662115',
+    appNFT: '0x67b444dB2581920A7Bb4FB07f6B19D614B7f6ACA',
+    RoleControl: '0x4ef58923c7e99598DAEB00CCE5315cAD9Efa3761',
+    SubscriptionBalanceCalculator: '0xaEDA30eC4368181EFa71Ea32fb57c673Ab930f8f',
+    SubscriptionBalance: '0x5c8065532AFfF0A784E42F9C56A3d6eDBF705301',
+    SubnetDAODistributor: '0x302fa13977843Ee12F7Bde13E8b2F13023d0994C',
+    Subscription: '0x64A11d414D66819e17e8Cbe6A37E7Fd90021C890',
+    xctMinter: '0xaF15B6Db0b6220391007701228883BA2f04D04F9',
+    ContractBasedDeployment: '0xb20F65c1D442ebcebce7C377ea47e480c0aB453C'
   };
   DarkMatterNftContract = new web3.eth.Contract(
     DarkMatterNFT,
@@ -1122,8 +1123,18 @@ const createApp = async (
 
 // --------------------- XCTMinter
 
+const estimateETHForXCT = async (amount) => {
+  return await sendTransaction(
+    false,
+    XCTMinterContract,
+    "estimateETHForXCT",
+    defaultOptions,
+    amount
+  )
+}
+
 const easyBuyXCT = async (amount) => {
-  let options = defaultOptions;
+  let options = {...defaultOptions};
   options.value = amount;
   return await sendTransaction(true, XCTMinterContract, "easyBuyXCT", options);
 };
@@ -1224,4 +1235,5 @@ export {
   getAllSubnetID,
   getPlatformData,
   getSubscriptionComputes,
+  estimateETHForXCT
 };

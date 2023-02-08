@@ -1,10 +1,25 @@
 import { Button, Form, Input, Select, Checkbox, Switch} from "antd";
 import all from 'it-all';
 import React, { useEffect, useState } from 'react';
-import {deployApp, getPublicKey} from './lib/deployApp';
-import { getXCTBalance, getNFTBalance, getClustersOfSubnet, createApp, updateApp, getUserSubscription, getSubscribedSubnetsOfNFT, getPlatformData, getSupportFeesForNFT, estimateDripRateforSubnet } from '../../contracts/SmartContractFunctions';
+import {encryptApp} from './lib/encryptApp';
+import {
+estimateETHForXCT,
+easyBuyXCT,
+getXCTBalance,
+getNFTBalance,
+getClustersOfSubnet,
+createApp,
+updateApp,
+getUserSubscription,
+getSubscribedSubnetsOfNFT,
+getPlatformData,
+getSupportFeesForNFT,
+estimateDripRateforSubnet
+} from '../../contracts/SmartContractFunctions';
 import styles from './styles/appForm.module.css';
 import {RESOURCE_NAME_LIST, convertIPFSHash} from '../../contracts/utils';
+import {ENCRYPT_ARGS} from './constants';
+import {sendToIPFS} from './lib/ipfs';
 
 
 export const formatIPFSDataForUI = async (app, ipfsData, nftID) => {
@@ -60,7 +75,7 @@ export const formatIPFSDataForUI = async (app, ipfsData, nftID) => {
     return appData;
 }
 
-const BasicInfo = ({isUpdate}) => {
+const BasicInfo = ({isUpdate, setFactorChange}) => {
     return (
     <div className={styles.appFormComponent}>
         <Form.Item label="AppName" name="appName">
@@ -73,19 +88,34 @@ const BasicInfo = ({isUpdate}) => {
             <Input />
         </Form.Item>
         <Form.Item label="referralAddress" name="referralAddress">
-            <Input disabled={isUpdate}/>
+            <Input
+                disabled={isUpdate}
+                onChange={()=>setFactorChange(true)}
+            />
         </Form.Item>
         <Form.Item label="licenseAddress" name="licenseAddress">
-            <Input disabled={isUpdate}/>
+            <Input
+                disabled={isUpdate}
+                onChange={()=>setFactorChange(true)}
+            />
         </Form.Item>
         <Form.Item label="SupportAddress" name="supportAddress">
-            <Input disabled={isUpdate}/>
+            <Input
+                disabled={isUpdate}
+                onChange={()=>setFactorChange(true)}
+            />
         </Form.Item>
         <Form.Item label="platformAddress" name="platformAddress">
-            <Input disabled={isUpdate}/>
+            <Input
+                disabled={isUpdate}
+                onChange={()=>setFactorChange(true)}
+            />
         </Form.Item>
         <Form.Item label="licenseFee" name="licenseFee">
-            <Input disabled={isUpdate}/>
+            <Input
+                disabled={isUpdate}
+                onChange={()=>setFactorChange(true)}
+            />
         </Form.Item>
         <Form.Item label="Private" name="private" valuePropName='checked'>
           <Switch />
@@ -124,7 +154,7 @@ const ContainerInfo = () => {
     )
 }
 
-const SubnetInfo = ({subnets, selectSubnet}) => {
+const SubnetInfo = ({subnets, selectSubnet, setFactorChange}) => {
     // const subnetList = [0, 1, 2];
     // const subnetNames = ["mangalore-subnet", "mumbai-subnet", "usa-subnet"];
 
@@ -139,6 +169,7 @@ const SubnetInfo = ({subnets, selectSubnet}) => {
                 <Form.Item label={`${subnetName} #(${subnetID})`} name={switchName} valuePropName='checked'>
                     <Switch onChange={(e) => {
                         selectSubnet(index, e);
+                        setFactorChange(true);
                     }}/>
                 </Form.Item>
             );
@@ -158,7 +189,7 @@ const SubnetInfo = ({subnets, selectSubnet}) => {
     );
 }
 
-const ResourcesInfo = ({selectedSubnetList, subnets}) => {
+const ResourcesInfo = ({selectedSubnetList, subnets, setFactorChange}) => {
 
     const [subnetList, setSubnetList] = useState([]);
     const [subnetNames, setSubnetNameList] = useState([]);
@@ -181,7 +212,9 @@ const ResourcesInfo = ({selectedSubnetList, subnets}) => {
         return subnetNames.map((subnetName, index) => {
             return (
                 <Form.Item label={subnetName} name={resourceName+'/'+subnetList[index]}>
-                    <Input />
+                    <Input
+                        onChange={()=>setFactorChange(true)}
+                    />
                 </Form.Item>
             );
         })
@@ -191,7 +224,9 @@ const ResourcesInfo = ({selectedSubnetList, subnets}) => {
             return (
                 <Form.Item label={resourceName} name={resourceName}>
                     <Form.Item name={resourceName}>
-                        <Input />
+                        <Input
+                            onChange={()=>setFactorChange(true)}
+                        />
                     </Form.Item>
                     <Form.Item name="subnetReplica">
                         {displayReplica(resourceName)}
@@ -208,9 +243,17 @@ const ResourcesInfo = ({selectedSubnetList, subnets}) => {
     )
 }
 
-const DripRateForm = ({form, setDripRate, dripRate, subscriptionBalance, xctBalance, renderCount}) => {
+const DripRateForm = ({
+        purchaseXCT,
+        setDripRate,
+        subscriptionBalance,
+        xctComputeAmount,
+        xctBalance,
+        ethForXCTAmount
+    }) => {
 
     const timePeriod = [
+        {label: "No balance", value: 0},
         { label: "5 minutes(minimum)", value: 300 },
         { label: "1 day", value: 86400 },
         { label: "1 week", value: 604800 },
@@ -224,52 +267,58 @@ const DripRateForm = ({form, setDripRate, dripRate, subscriptionBalance, xctBala
         { label: "5 years", value: 157680000 },
       ];
 
-    //   calcDripRate
+
     return (
         <div className={styles.appFormComponent}>
+            <div>
+                Subscription Balance: {subscriptionBalance/1000000000}
+            </div>
+            <div>
+                Your XCT Balance: {xctBalance/1000000000}
+            </div>
             <Form.Item label='timePeriod' name="timePeriod">
-              <Select options={timePeriod}/>
+              <Select options={timePeriod} onChange={setDripRate}/>
             </Form.Item>
-            <Form.Item label='dripRate' name="dripRate">
-              <Button onClick={setDripRate}> Drip Rate </Button>
-            </Form.Item>
-            {/* <div>
-                Drip Rate Per Second: {dripRate}
-            </div> */}
             <div>
-                Full Amount: {dripRate * form.getFieldValue('timePeriod')}
-            </div>
-
-            <div>
-                Balance To Add: {Math.max(0, (dripRate * form.getFieldValue('timePeriod')) - subscriptionBalance)}
+                XCT To Add: {xctComputeAmount/1000000000}
             </div>
             <div>
-                Your XCT Balance: {xctBalance}
+                XCT You Don't Have: {Math.max(0, xctComputeAmount - xctBalance)/1000000000}
             </div>
             <div>
-                <Button>Mint XCT</Button>
+                ETH required for purchasing XCT: {ethForXCTAmount/Math.pow(10,18)}
             </div>
             <div>
-                rend: {renderCount}
+                <Button onClick={purchaseXCT} disabled={ethForXCTAmount == 0}>Mint XCT</Button>
             </div>
         </div>   
     );
 }
 
-export const AppForm = ({umbral, formValues, subnets, isUpdate, selectedNFT, appList, setAppList}) => {
-
-    // const formRef = React.useRef<FormInstance>(null);
+export const AppForm = ({formValues, subnets, isUpdate, selectedNFT, appList, setAppList}) => {
     const [form] = Form.useForm();
     const [selectedSubnetList, setSelectedSubnetList] = useState({});
-    const [dripRate, setDripRate] = useState(0);
     const [subscriptionBalance, setSubscriptionBalance] = useState(0);
     const [xctBalance, setXCTBalance] = useState(0);
-    const [renderCount, setRenderCount] = useState(0);
-    // const [bobKeyList, setBobKeyList] = useState([]);
+    const [xctComputeAmount, setXCTComputeAmount ] = useState(0);
+    const [ethForXCTAmount, setETHForXCTAmount] = useState(0);
+    const [isFactorChanged, setFactorChange] = useState(false);
+    const [dripTimePeriod, setDripTimePeriod] = useState(0);
 
     const selectSubnet = (index, e) => {
         selectedSubnetList[index] = e;
         setSelectedSubnetList({...selectedSubnetList});
+    }
+
+    const estimateXCT = async (xctAmount) => {
+        const amount = await estimateETHForXCT(xctAmount);
+        setETHForXCTAmount(amount);
+    }
+
+    const purchaseXCT = async () => {
+        await easyBuyXCT(ethForXCTAmount);
+
+        await calcDripRate(dripTimePeriod);
     }
 
     const getBobKeys = async (subnetList) => {
@@ -333,7 +382,11 @@ export const AppForm = ({umbral, formValues, subnets, isUpdate, selectedNFT, app
             for(var j = 0; j < RESOURCE_NAME_LIST.length; j++)
             {
                 const resourceName = RESOURCE_NAME_LIST[j];
-                if(resourceArray[j] > 0 && values[`${resourceName}/${subnetID}`] && Number(values[`${resourceName}/${subnetID}`]) > 0)
+                if(
+                    resourceArray[j] > 0
+                    && values[`${resourceName}/${subnetID}`]
+                    && Number(values[`${resourceName}/${subnetID}`]) > 0
+                )
                 {
                     curMultiplier.push( Number(values[`${resourceName}/${subnetID}`]));
                 }
@@ -369,7 +422,7 @@ export const AppForm = ({umbral, formValues, subnets, isUpdate, selectedNFT, app
     
         return {
             ...values,
-            balanceToAdd: 0,
+            balanceToAdd: xctComputeAmount,
             nftID: values.nftID,
             rlsAddressList,
             licenseFeeList,
@@ -384,15 +437,20 @@ export const AppForm = ({umbral, formValues, subnets, isUpdate, selectedNFT, app
     }
     
     const createApplication = async (values) => {
-
         const formatParams = formatParamsForCreateApp(values);
 
-
         const bobData = await getBobKeys(formatParams.subnetList);
-        const CID = await deployApp(umbral, formatParams, bobData);
+        const encryptedApp = await encryptApp(ENCRYPT_ARGS, formatParams, bobData);
+        const payloadResponse = await sendToIPFS(
+            formatParams.nftID,
+            formatParams.appName,
+            encryptedApp
+        );
+        const CID = payloadResponse.toString();
         
         formatParams.CID = CID;
 
+        console.log("balance to add: ", formatParams.balanceToAdd);
         await createApp(
             formatParams.balanceToAdd,
             formatParams.nftID,
@@ -413,10 +471,14 @@ export const AppForm = ({umbral, formValues, subnets, isUpdate, selectedNFT, app
         const formatParams = formatParamsForCreateApp(values);
 
         const bobData = await getBobKeys(formatParams.subnetList);
-        const CID = await deployApp(umbral, formatParams, bobData);
-
+        const encryptedApp = await encryptApp(ENCRYPT_ARGS, formatParams, bobData);
+        const payloadResponse = await sendToIPFS(
+            formatParams.nftID,
+            formatParams.appName,
+            encryptedApp
+        );
+        const CID = payloadResponse.toString();
         formatParams.CID = CID;
-
  
         await updateApp(
             formatParams.balanceToAdd,
@@ -461,16 +523,13 @@ export const AppForm = ({umbral, formValues, subnets, isUpdate, selectedNFT, app
         setAppList([...appList]);
     }
 
-    const calcDripRate = async () => {
-        
+    const calcDripRate = async (timePeriod) => {
         let values = form.getFieldsValue();
         values = formatParamsForCreateApp(values);
 
         const nftID = values.nftID;
 
-        console.log("calc drip rate");
         let subscribedSubnets = await getSubscribedSubnetsOfNFT({nftID: values.nftID});
-        console.log("got subscribed subnets: ", subscribedSubnets);
         subscribedSubnets = subscribedSubnets.map(subnet => Number(subnet));
 
         const dripFactorList = {
@@ -521,7 +580,7 @@ export const AppForm = ({umbral, formValues, subnets, isUpdate, selectedNFT, app
             }
           }
     
-          console.log("percent: ", platformData.platformPercentage, platformData.referralPercentage, platformData.discountPercentage);
+
           dripFactorList.subnetList.push(subnetID);
           dripFactorList.supportFeeList.push(supportPercent);
           dripFactorList.platformFeeList.push(platformData.platformPercentage);
@@ -531,22 +590,39 @@ export const AppForm = ({umbral, formValues, subnets, isUpdate, selectedNFT, app
           dripFactorList.computeList.push(multipliedCompute);
         }
     
-         console.log("payload: ", JSON.stringify(dripFactorList));
     
         let fee = await estimateDripRateforSubnet(dripFactorList);
-        fee = fee/1000000000;
 
-        console.log("fee: ", fee);
-        setDripRate(fee);
+        console.log("fee: ", fee, timePeriod);
 
-        const totalBalance = await getNFTBalance(nftID);
-        setSubscriptionBalance(totalBalance);
+        let xctComputeTotal = fee * timePeriod;
+        setXCTComputeAmount(xctComputeTotal);
 
-        const xctBalance = await getXCTBalance(window.ethereum.selectedAddress);
-        setXCTBalance(xctBalance);
+        
+        const subBal = await getNFTBalance(nftID);
+        setSubscriptionBalance(subBal);
 
-        setRenderCount(renderCount + 1);
-      }
+        const xctBal = await getXCTBalance(window.ethereum.selectedAddress);
+        setXCTBalance(xctBal);
+        
+        console.log("subBal: ", subBal, xctBal);
+
+        const amountOfXCTForConvert = Math.max(0, xctComputeTotal - xctBal);
+        if(amountOfXCTForConvert > 0) {
+            await estimateXCT(amountOfXCTForConvert);
+        }
+        else {
+            setETHForXCTAmount(0);
+        }
+
+        setDripTimePeriod(timePeriod);
+    }
+
+
+    const isDeployDisabled = () => {
+        return !(xctComputeAmount == 0 || (xctBalance >= xctComputeAmount));
+    }
+    
 
     const onFinish = async (values) => {
         if(isUpdate)
@@ -563,6 +639,26 @@ export const AppForm = ({umbral, formValues, subnets, isUpdate, selectedNFT, app
 
     }
 
+    useEffect(
+        () => {
+            if(isFactorChanged)
+                form.setFieldValue('timePeriod', 'No balance');
+        },
+        [isFactorChanged]
+    );
+
+    useEffect(
+        () => {
+            (async () => {
+                const xctBal = await getXCTBalance(window.ethereum.selectedAddress);
+                setXCTBalance(xctBal);
+
+                const subBal = await getNFTBalance(selectedNFT);
+                setSubscriptionBalance(subBal);
+            })();
+        },
+        []
+    );
 
     useEffect(
         () => {
@@ -592,14 +688,33 @@ export const AppForm = ({umbral, formValues, subnets, isUpdate, selectedNFT, app
           onFinishFailed={onFinishFailed}
         >
             <div className={styles.formListContainer}>
-                <BasicInfo isUpdate={isUpdate}/>
+                <BasicInfo
+                    isUpdate={isUpdate}
+                    setFactorChange={setFactorChange}
+                />
                 <ContainerInfo/>
-                <SubnetInfo subnets={subnets} selectSubnet={selectSubnet}/>
-                <ResourcesInfo selectedSubnetList={selectedSubnetList} subnets={subnets}/>
-                <DripRateForm setDripRate={calcDripRate} dripRate={dripRate} form={form} subscriptionBalance={subscriptionBalance} xctBalance={xctBalance} renderCount={renderCount}/>
+                <SubnetInfo
+                    subnets={subnets}
+                    selectSubnet={selectSubnet}
+                    setFactorChange={setFactorChange}
+                />
+                <ResourcesInfo
+                    selectedSubnetList={selectedSubnetList}
+                    subnets={subnets}
+                    setFactorChange={setFactorChange}
+                />
+                <DripRateForm
+                    purchaseXCT={purchaseXCT}
+                    setDripRate={calcDripRate}
+                    subscriptionBalance={subscriptionBalance}
+                    xctComputeAmount={xctComputeAmount}
+                    form={form}
+                    xctBalance={xctBalance}
+                    ethForXCTAmount={ethForXCTAmount}
+                />
             </div>
-            <div>
-                <Button htmlType="submit">Deploy</Button>
+            <div className={styles.deployContainer}>
+                <Button htmlType="submit" disabled={isDeployDisabled()}>Deploy</Button>
             </div>
         </Form>
         </>

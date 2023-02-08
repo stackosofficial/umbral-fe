@@ -1,82 +1,20 @@
-// import all from 'it-all';
-// import React, { useEffect, useState } from 'react';
-// import { getAppsOfNFT } from '../utils/SmartContractFunctions';
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
-import {getEncryptedDataFromCache, getAppDataFromCache, setAppDataToCache} from './ipfsHash';
+import {getEncryptedDataFromCache, getAppDataFromCache, setAppDataToCache, getDataFromIPFS, setEncryptedDataToCache} from './ipfs';
+import {
+  getUmbral,
+  convertIntoUmbralPublicKey,
+  convertIntoUmbralSecretKey,
+  convertIntoUmbralCapsule,
+  convertIntoUmbralCipher,
+  convertIntoUmbralVerifiedCfrag,
+  decryptCreatorSecretKey,
+  customPromiseRace
+} from './utils';
 
-let umbral = null;
-
-const setUmbral = (umbralparam) =>{
-    umbral = umbralparam;
-}
-
-async function convertIntoUmbralPublicKey(object) {
-  // return umbral.PublicKey.fromBytes(object);
-    const publicKeyForAlice = new Uint8Array(Object.values(object));
-    console.log('publicKeyForAlice ', publicKeyForAlice);
-    return umbral.PublicKey.fromBytes(publicKeyForAlice);
-}
-
-// Converting the secretKey from bytes to instance
-async function convertIntoUmbralSecretKey(convertedUint8Array) {
-    const secreteKeyForAlice = new Uint8Array(Object.values(convertedUint8Array));
-    return umbral.SecretKey.fromBytes(secreteKeyForAlice);
-  }
-  // Converting the capsule from bytes to instance
-  async function convertIntoUmbralCapsule(object) {
-  
-    const capsuleForAlice = new Uint8Array(Object.values(object));
-    return umbral.Capsule.fromBytes(capsuleForAlice);
-  }
-  
-  // Converting the cipherText from bytes to instance
-  async function convertIntoUmbralCipher(object) {
-
-    const cipherText = new Uint8Array(Object.values(object));
-    console.log('cipherText ', cipherText);
-  
-    return cipherText;
-  }
-
-function convertIntoUmbralVerifiedCfrag(object) {
-  
-    const cfrag = new Uint8Array(Object.values(object));
-    return umbral.VerifiedCapsuleFrag.fromVerifiedBytes(cfrag);
-}
-
-function customPromiseRace(promiseArr, expectedCount) {
-    return new Promise((resolve, reject) => {
-      if (promiseArr.length < expectedCount) {
-        throw new Error(`Not enough promises to get ${expectedCount} results`);
-      }
-      const results = [];
-      var errorCount = 0;
-
-      const checkFail = () => {
-        errorCount += 1;
-        if ((promiseArr.length - errorCount) < expectedCount) {
-          reject();
-        }
-      };
-      let i = 0;
-      for (const p of promiseArr) {
-        i += 1;
-        Promise.resolve(p).then((result) => {
-          if (results?.length < expectedCount) {
-            results.push(result);
-
-            if (results?.length === expectedCount) {
-              resolve(results);
-            }
-          }
-        }, checkFail);
-      }
-    });
-  }
 
 export const login = async () => {
-    const dateNow = Date.now();
+    const dateNow = Date.now() + 60*60*24*1000;
     window.sessionStorage.setItem('signatureTimeStamp', dateNow);
     const uid = uuidv4();
     window.sessionStorage.setItem('signatureUuidv4', uid);
@@ -132,7 +70,7 @@ export const login = async () => {
 
     signature = res;
     sessionStorage.setItem('signature', signature);
-  };
+};
 
   const signUserForDecryption = async () => {
     const networkId = 31337;
@@ -185,123 +123,172 @@ export const login = async () => {
       signature,
       userAddress: signer,
     };
-  };
+};
 
-  export const decryptAppData = async (app, nftID, nftRole, umbralParam) => {
-    setUmbral(umbralParam);
+export const decryptFromCreatorSK = async (encryptedData) => {
+    const umbral = getUmbral();
+    const dec = new TextDecoder('utf-8');
 
-    const ursulaURL = [
-      'http://localhost:5000',
-      'http://localhost:5001',
-      'http://localhost:5002',
-      'http://localhost:5003',
-      'http://localhost:5004',
-      'http://localhost:5005',
-      'http://localhost:5006',
-      'http://localhost:5007',
-      'http://localhost:5008',
-    ];
+    const { creator, capsule, cipherText } = encryptedData;
 
+    const creatorSK = await decryptCreatorSecretKey(creator.secretKey);
 
-    const cid = app.cid;
+    const appData = JSON.parse(
+      dec.decode(
+        umbral.decryptOriginal(
+          creatorSK,
+          capsule,
+          cipherText
+        )
+      )
+    );
 
-    const appCfrags = [];
-    const IpfsMapFromCache = await getEncryptedDataFromCache(nftID);
-    const AppMapFromCache = await getAppDataFromCache(nftID);
+    return appData;
+}
+
+export const decryptFromUrsula = async (encryptArgs, nftID, nftRole, encryptedData) => {
+    const umbral = getUmbral();
+    const dec = new TextDecoder('utf-8');
+
+    const ursulaURL = encryptArgs.ursulaURLList;
+    const shares = encryptArgs.kfragCount;
+    const threshold = encryptArgs.kfragThreshold;
+
+    let nftOwnerAPI = encryptArgs.ursulaNFTOwnerAPI;
+    if(!nftRole.owner)
+    {
+      nftOwnerAPI = encryptArgs.ursulaRoleAPI;
+    }
 
     const userAuthPayload = await signUserForDecryption();
 
-    const appName = app.appName;
+    const { creator, reader, capsule, cipherText, capsuleBytes } = encryptedData;
 
-    console.log("app map: ", AppMapFromCache);
+    try {
+      await axios.post(
+        `${ursulaURL[0]}/${nftOwnerAPI}/${nftID}`,
+        {
+          userAuthPayload,
+          capsule: capsuleBytes,
+          kfrag: reader.kfrags[0].kfrag,
+        }
+      );
+    } catch (err) {
+      if (err.response.data.message == 'Signature expired')
+      {
+        throw new Error("Signature expired.");
+      }
+      else {
+        throw new Error("Failed to verify signature from ursula:"+ err);
+      }
+    }
+
+
+    const ursulaPostReqList = [];
+    for(var i = 0; i < shares; i++)
+    {
+      const axiosCall = axios.post(
+          `${ursulaURL[i]}/${nftOwnerAPI}/${nftID}`,
+          {
+            userAuthPayload,
+            capsule: capsuleBytes,
+            kfrag: reader.kfrags[i].kfrag,
+          }
+        );
+        ursulaPostReqList.push(axiosCall);
+    }
+    const responses = await customPromiseRace(ursulaPostReqList, threshold);
+
+    const cfrags = responses.map(
+      (res) => convertIntoUmbralVerifiedCfrag(res.data.data)
+    );
+
+    const appData = JSON.parse(
+      dec.decode(
+        umbral.decryptReencrypted(
+          reader.secretKey,
+          creator.publicKey,
+          capsule,
+          cfrags,
+          cipherText
+        )
+      )
+    );
+
+    return appData;
+}
+
+export const decryptAppData = async (encryptArgs, app, nftID, nftRole) => {
+    const curAddress = window.ethereum.selectedAddress;
+
+
+    const encryptedMapFromCache = await getEncryptedDataFromCache(nftID);
+    const AppMapFromCache = await getAppDataFromCache(nftID);
+
+    const appName = app.appName;
+    const CID = app.cid;
+
     if(AppMapFromCache[appName])
     {
         return AppMapFromCache[appName];
     }
     
-    if (IpfsMapFromCache[appName])
+    let encryptedData;
+    if (encryptedMapFromCache[appName])
     {
-      const { creator, reader, capsule, cipherText } = IpfsMapFromCache[appName];
-      try {
-        await axios.post(
-          `${ursulaURL[0]}/api/v1/re-encryption/${nftID}`,
-          {
-            userAuthPayload,
-            capsule,
-            kfrag: reader.kfrags[0].kfrag,
-          }
-        );
-      } catch (err) {
-        if (err.response.data.message == 'Signature expired') {
-          console.log('signature has expired');
-
-          throw new Error("Signature expired");
-        }
-      }
-
-
-      let nftOwnerAPI = 'api/v1/re-encryption';
-      console.log("nftOwnerAPI: ", nftRole);
-      if(!nftRole.owner)
-      {
-        nftOwnerAPI = 'api/v1/re-encryption/role';
-      }
-
-      console.log("calling ursula");
-      const cfragsPost = [];
-      for(var i = 0; i < 9; i++)
-      {
-        const axiosCall = axios.post(
-            `${ursulaURL[i]}/${nftOwnerAPI}/${nftID}`,
-            {
-              userAuthPayload,
-              capsule,
-              kfrag: reader.kfrags[i].kfrag,
-            }
-          );
-          cfragsPost.push(axiosCall);
-      }
-
-      const responses = await customPromiseRace(cfragsPost, 5);
-
-      const cfrags = responses.map(
-        (res) => convertIntoUmbralVerifiedCfrag(res.data.data)
-      );
-
-      appCfrags.push({ cfrags: cfrags, cid: cid });
-
-      console.log("creator public Key: ", creator.publicKey);
-      const creatorPK = await convertIntoUmbralPublicKey(
-        creator.publicKey
-      );
-      const umbralCapsule = await convertIntoUmbralCapsule(
-        capsule
-      );
-      const umbralCipher = await convertIntoUmbralCipher(
-        cipherText
-      );
-      const readerSK = await convertIntoUmbralSecretKey(
-        reader.secretKey
-      );
-      
-      const dec = new TextDecoder('utf-8');
-
-      const decryptedAppObj = JSON.parse(
-        dec.decode(
-          umbral.decryptReencrypted(
-            readerSK,
-            creatorPK,
-            umbralCapsule,
-            cfrags,
-            umbralCipher
-          )
-        )
-      );
-
-      AppMapFromCache[appName] = decryptedAppObj;
-
-      await setAppDataToCache(nftID, AppMapFromCache);
-
-      return decryptedAppObj;
+      encryptedData = encryptedMapFromCache[appName];
     }
-  };
+    else {
+      encryptedData = await getDataFromIPFS(CID, nftID, appName);
+      encryptedMapFromCache[appName] = encryptedData;
+      await setEncryptedDataToCache(nftID, encryptedMapFromCache);
+    }
+
+  
+    let { creator, reader, capsule, cipherText } = encryptedData;
+
+    let capsuleBytes = capsule;
+    capsule = await convertIntoUmbralCapsule(
+      capsule
+    );
+
+    cipherText = await convertIntoUmbralCipher(
+      cipherText
+    );
+
+    creator.publicKey = await convertIntoUmbralPublicKey(
+      creator.publicKey
+    );
+  
+    reader.secretKey = await convertIntoUmbralSecretKey(
+      reader.secretKey
+    );
+
+    encryptedData = {
+      capsule, cipherText, creator, reader, capsuleBytes
+    };
+
+
+    if(curAddress == creator.address)
+    {
+      try {
+        const appData = await decryptFromCreatorSK(encryptedData);
+
+        AppMapFromCache[appName] = appData;
+        await setAppDataToCache(nftID, AppMapFromCache);
+
+        return appData;
+      }
+      catch(err) {
+        console.error(err);
+      }
+    }
+
+
+    const appData = await decryptFromUrsula(encryptArgs, nftID, nftRole, encryptedData);
+
+    AppMapFromCache[appName] = appData;
+    await setAppDataToCache(nftID, AppMapFromCache);
+
+    return appData;
+};

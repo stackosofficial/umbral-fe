@@ -11,6 +11,13 @@
 
 .formListContainer {
     display: flex;
+    justify-content: center;
     width: 100%;
     flex-wrap: wrap;
+}
+
+.deployContainer {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 20px;
 }

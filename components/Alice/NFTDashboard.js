@@ -1,7 +1,14 @@
 import all from 'it-all';
 import React, { useEffect, useState } from 'react';
-import {deployApp, getPublicKey} from './lib/deployApp';
-import { getListOfOwnedAppNFT, mintAppNFT, getAccountRoles, getAccountsWithRole,grantRole, transferAppNFt } from '../../contracts/SmartContractFunctions';
+import {deployApp, getPublicKey} from './lib/encryptApp';
+import {
+  getListOfOwnedAppNFT,
+  mintAppNFT,
+  getAccountRoles,
+  getAccountsWithRole,
+  grantRole,
+  transferAppNFt
+} from '../../contracts/SmartContractFunctions';
 import styles from './styles/dashboard.module.css';
 import {ROLE} from '../../contracts/utils';
 
@@ -153,7 +160,10 @@ const NFTDashboard = ({setSelectedNFT, selectedNFT}) => {
   }
 
   useEffect(() => {
-    getNFTList()
+    if(typeof window.ethereum !== "undefined" || (typeof window.web3 !== "undefined")) {
+      getNFTList();
+    }
+
   }, []);
 
 
