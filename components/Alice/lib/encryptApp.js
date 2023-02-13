@@ -1,6 +1,10 @@
 import { encrypt, getUmbral } from './utils';
 
-const encryptForSubnetsAndReader = async (encryptArgs, objectToEncrypt, bobData) => {
+const encryptForSubnetsAndReader = async (
+  encryptArgs,
+  objectToEncrypt,
+  bobData
+) => {
   const umbral = getUmbral();
   const enc = new TextEncoder();
   const shares = encryptArgs.kfragCount;
@@ -16,18 +20,16 @@ const encryptForSubnetsAndReader = async (encryptArgs, objectToEncrypt, bobData)
 
   if (!ethObj || !ethObj.PK || !ethObj.address != curAddress) {
     ethPK = await window.ethereum.request({
-      method: "eth_getEncryptionPublicKey",
+      method: 'eth_getEncryptionPublicKey',
       params: [curAddress],
     });
 
-    sessionStorage.setItem(`stackOS_pk_${curAddress}`,
-    {
+    sessionStorage.setItem(`stackOS_pk_${curAddress}`, {
       PK: ethPK,
-      address: curAddress
+      address: curAddress,
     });
-  }
-  else {
-    ethPk = ethObj.PK
+  } else {
+    ethPk = ethObj.PK;
   }
 
   const encryptedSecretKey = encrypt(
@@ -49,16 +51,14 @@ const encryptForSubnetsAndReader = async (encryptArgs, objectToEncrypt, bobData)
     data: {},
   };
 
-  for (var i = 0; i < subnetList.length; i++)
-  {
+  for (var i = 0; i < subnetList.length; i++) {
     const subnetID = subnetList[i];
     const { publicKeyList, clusterIDList } = bobData[subnetID];
 
     bobKFragMap.clusters[subnetID] = clusterIDList;
     bobKFragMap.data[subnetID] = {};
 
-    for (var j = 0; j < clusterIDList.length; j++)
-    {
+    for (var j = 0; j < clusterIDList.length; j++) {
       const clusterID = clusterIDList[j];
       const bobPKBytes = publicKeyList[j];
 
@@ -80,7 +80,6 @@ const encryptForSubnetsAndReader = async (encryptArgs, objectToEncrypt, bobData)
       bobKFragMap.data[subnetID][clusterID] = encryptedBobKFrags;
     }
   }
-
 
   const readerSK = umbral.SecretKey.random();
   const readerPK = readerSK.publicKey();
@@ -120,11 +119,9 @@ const encryptForSubnetsAndReader = async (encryptArgs, objectToEncrypt, bobData)
 };
 
 const encryptKfragsUsingUrsula = async (encryptArgs, frags) => {
-
   const encryptedFrags = [];
   const ursulaPKList = encryptArgs.ursulaPKList;
-  for (let i = 0; i < frags.length; i++)
-  {
+  for (let i = 0; i < frags.length; i++) {
     const ursulaPK = ursulaPKList[i];
     const encryptedFrag = encrypt(ursulaPK, frags[i].toString());
 
@@ -137,8 +134,8 @@ const encryptKfragsUsingUrsula = async (encryptArgs, frags) => {
   return encryptedFrags;
 };
 
-export async function encryptApp(encryptArgs, appData, bobData)
-{
+export async function encryptApp(encryptArgs, appData, bobData) {
+  console.log('appData ', appData);
   let hostURL = `${appData.appName}-n${appData.nftID}`;
   let payload = {
     appName: appData.appName,
@@ -149,36 +146,40 @@ export async function encryptApp(encryptArgs, appData, bobData)
     },
     privateImage: false,
     containerPort: JSON.stringify([
-      { protocol: "TCP", port: appData.containerPort },
+      { protocol: 'TCP', port: appData.containerPort },
     ]),
     persistenceEnabled: false,
-    whitelistedIps: ["0.0.0.0/0"],
-    replicaCount: "1",
+    whitelistedIps: ['0.0.0.0/0'],
+    replicaCount: '1',
     namespace: `n${appData.nftID}`,
     resourceLimits: {
-      memory: "100M",
-      cpu: "100m",
+      memory: '100M',
+      cpu: '100m',
     },
     resourceRequests: {
-      memory: "100M",
-      cpu: "100m",
+      memory: '100M',
+      cpu: '100m',
     },
     enableCertKey: false,
     networkId: 137,
     servicePort: JSON.stringify([
-      { protocol: "TCP", port: appData.accessPort },
+      { protocol: 'TCP', port: appData.accessPort },
     ]),
-    path: ["/"],
+    path: ['/'],
     envVariables: [
       {
-        name: "APP_NODE_URL",
-        value: "https://eth-privatenet.stackos.io/zeus",
+        name: 'APP_NODE_URL',
+        value: 'https://eth-privatenet.stackos.io/zeus',
       },
     ],
     args: [],
   };
 
-  const encryptData = await encryptForSubnetsAndReader(encryptArgs, payload, bobData);
+  const encryptData = await encryptForSubnetsAndReader(
+    encryptArgs,
+    payload,
+    bobData
+  );
 
   return encryptData;
 }
