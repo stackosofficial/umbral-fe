@@ -29,7 +29,6 @@ let selectedAccount,
   XCTContract,
   AppNFTContract,
   ContractBasedDeploymentContract,
-  RoleControlContract,
   SubscriptionBalanceContract,
   SubscriptionDaoContract,
   SubscriptionBalanceCalculatorContract,
@@ -61,12 +60,11 @@ const fetchAddressAndContracts = new Promise(async (resolve, reject) => {
 
   const contractAddresses = {
     deployer: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
-    xct: '0xAa07486C20F73fF4309495411927E6AE7C884DBa',
-    stack: '0xAA2a95A342b774512c64799597bD75389e7d3C7a',
-    nftToken: '0xEd00171E28B55C3ba9bE26a474611755C860E6F0',
-    Registration: '0xBd422978E222C626b94e66f33791a61FbE662115',
-    appNFT: '0x67b444dB2581920A7Bb4FB07f6B19D614B7f6ACA',
-    RoleControl: '0x4ef58923c7e99598DAEB00CCE5315cAD9Efa3761',
+    xct: '0xAA2a95A342b774512c64799597bD75389e7d3C7a',
+    stack: '0x6fc6A5b592406D9ee1e9a4e6BA20E03e73165B3A',
+    nftToken: '0xBd422978E222C626b94e66f33791a61FbE662115',
+    Registration: '0x3A41dfF0bB941fC5A1392c4f06cD1113b06c3eE2',
+    appNFT: '0x4ef58923c7e99598DAEB00CCE5315cAD9Efa3761',
     SubscriptionBalanceCalculator: '0xaEDA30eC4368181EFa71Ea32fb57c673Ab930f8f',
     SubscriptionBalance: '0x5c8065532AFfF0A784E42F9C56A3d6eDBF705301',
     SubnetDAODistributor: '0x302fa13977843Ee12F7Bde13E8b2F13023d0994C',
@@ -92,10 +90,6 @@ const fetchAddressAndContracts = new Promise(async (resolve, reject) => {
   ContractBasedDeploymentContract = new web3.eth.Contract(
     ContractBasedDeployment,
     contractAddresses.ContractBasedDeployment
-  );
-  RoleControlContract = new web3.eth.Contract(
-    RoleControl,
-    contractAddresses.RoleControl
   );
   SubscriptionBalanceContract = new web3.eth.Contract(
     SubscriptionBalance,
@@ -698,6 +692,18 @@ const getSupportFeesForNFT = async (values) => {
   return Number(supportFees);
 };
 
+const getNFTSubscription = async (values) => {
+    const userSubscription = await sendTransaction(
+      false,
+      SubscriptionContract,
+      "nftSubscription",
+      defaultOptions,
+      values.nftID,
+    );
+  
+    return userSubscription;
+  };
+
 const getUserSubscription = async (values) => {
   const userSubscription = await sendTransaction(
     false,
@@ -754,25 +760,23 @@ const getAllSubnetID = async () => {
   return subnetList;
 };
 
-const estimateDripRateforSubnet = async (values) => {
-  // uint256[] memory _subnetId,
-  // uint256[] memory _supportFee,
-  // uint256[] memory _platformFee,
-  // uint256[] memory _referralFee,
-  // uint256[] memory _discountFee,
-  // uint256[] memory _licenseFee,
-  // uint256[][] memory _computeRequired
+const estimateDripRatePerSec= async (values) => {
   const dripRate = await sendTransaction(
     false,
-    SubscriptionBalanceContract,
+    SubscriptionBalanceCalculatorContract,
     "estimateDripRatePerSec",
     defaultOptions,
-    values.subnetList,
-    values.supportFeeList,
-    values.platformFeeList,
-    values.referralPercentList,
-    values.discountList,
-    values.licenseList,
+        values.subnetList,
+    [
+        values.licenseFactor1,
+        values.licenseFactor2,
+        values.supportFactor1,
+        values.supportFactor2,
+        values.referralFactor,
+        values.platformFactor,
+        values.discountFactor,
+
+    ],
     values.computeList
   );
   return Number(dripRate);
@@ -912,7 +916,7 @@ const getSelectedAppNFTid = () => {
 const grantRole = async ({ nftId, role, address }) => {
   return await sendTransaction(
     true,
-    RoleControlContract,
+    AppNFTContract,
     "grantRole",
     defaultOptions,
     nftId,
@@ -926,7 +930,7 @@ const getAccountRoles = async (address) => {
   if (!address) address = selectedAccount;
   let data = await sendTransaction(
     false,
-    RoleControlContract,
+    AppNFTContract,
     "getAllRolesFromAccount",
     defaultOptions,
     address
@@ -943,7 +947,7 @@ const getAccountRoles = async (address) => {
 const getAccountsWithRole = async (nftId, role) => {
   let Roles = await sendTransaction(
     false,
-    RoleControlContract,
+    AppNFTContract,
     "getAccountsWithRole",
     defaultOptions,
     nftId,
@@ -959,7 +963,7 @@ const getAccountsWithRole = async (nftId, role) => {
 const removeAppsRole = async (nftId, role, address) => {
   return await sendTransaction(
     true,
-    RoleControlContract,
+    AppNFTContract,
     "revokeRole",
     defaultOptions,
     nftId,
@@ -1211,7 +1215,7 @@ export {
   getOwnersClustersAttributes,
   changeDNSIPOfCluster,
   transferClusterOwnership,
-  estimateDripRateforSubnet,
+  estimateDripRatePerSec,
   changeSubnetAttribute,
   checkXCTApprovalsForSubscribingSubnet,
   collectRevenueForAddress,
@@ -1235,5 +1239,6 @@ export {
   getAllSubnetID,
   getPlatformData,
   getSubscriptionComputes,
-  estimateETHForXCT
+  estimateETHForXCT,
+  getNFTSubscription
 };

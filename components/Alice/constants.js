@@ -31,3 +31,5 @@ export const ENCRYPT_ARGS = {
     ursulaPKList: URSULA_PK_LIST,
     ursulaURLList: URSULA_URL_LIST
 }
+
+export const XCT_SIZE = "1000000000000000000";

@@ -2,13 +2,9 @@ import all from 'it-all';
 import React, { useEffect, useState } from 'react';
 import {deployApp, getPublicKey} from './lib/encryptApp';
 import {
-  getListOfOwnedAppNFT,
-  mintAppNFT,
-  getAccountRoles,
-  getAccountsWithRole,
-  grantRole,
-  transferAppNFt
-} from '../../contracts/SmartContractFunctions';
+    AppNFT
+} from "@pratikgohil.dev/stackos-v2contract-package";
+
 import styles from './styles/dashboard.module.css';
 import {ROLE} from '../../contracts/utils';
 
@@ -27,10 +23,10 @@ const NFTDashboard = ({setSelectedNFT, selectedNFT}) => {
 
 
     const onSelectNFT = async (nftID, nftRole) => {
-        const readData = await getAccountsWithRole(nftID, ROLE.READ);
+        const readData = await AppNFT.getAccountsWithRole(nftID, ROLE.READ);
         setReadAddrList(readData);
 
-        const deployData = await getAccountsWithRole(nftID, ROLE.CONTRACT_BASED_DEPLOYER);
+        const deployData = await AppNFT.getAccountsWithRole(nftID, ROLE.CONTRACT_BASED_DEPLOYER);
         setDeployAddrList(deployData);
 
         setSelectedNFT(nftID, nftRole);
@@ -65,11 +61,11 @@ const NFTDashboard = ({setSelectedNFT, selectedNFT}) => {
   };
 
   const mintNFT = async () => {
-    await mintAppNFT(window.ethereum.selectedAddress);
+    await AppNFT.mint(window.ethereum.selectedAddress);
   }
   
   const getNFTList = async () => {
-    const nftList = await getListOfOwnedAppNFT(window.ethereum.selectedAddress);
+    const nftList = await AppNFT.getListOfOwnedAppNFT(window.ethereum.selectedAddress);
   
     // console.log("nft list: ", data);
     const respNFTData = {
@@ -84,7 +80,7 @@ const NFTDashboard = ({setSelectedNFT, selectedNFT}) => {
       };
     }
   
-    const roleData = await getAccountRoles(window.ethereum.selectedAddress);
+    const roleData = await AppNFT.getAccountRoles(window.ethereum.selectedAddress);
   
     for(var i = 0; i < roleData.length; i++)
     {
@@ -114,16 +110,16 @@ const NFTDashboard = ({setSelectedNFT, selectedNFT}) => {
   }
 
   const clickGrantReadRole = async () => {
-    await grantRole({nftId: selectedNFT, role: ROLE.READ, address:readAddr});
+    await AppNFT.grantRole({nftId: selectedNFT, role: ROLE.READ, address:readAddr});
   }
 
   const clickGrantDeployRole = async () => {
-    await grantRole({nftId: selectedNFT, role: ROLE.CONTRACT_BASED_DEPLOYER, address:readAddr});
+    await AppNFT.grantRole({nftId: selectedNFT, role: ROLE.CONTRACT_BASED_DEPLOYER, address:readAddr});
   }
 
   const transferNFT = async () => {
     const from = window.ethereum.selectedAddress;
-    await transferAppNFt(from, sendAddr, selectedNFT);
+    await AppNFT.transferFrom(from, sendAddr, selectedNFT);
   }
 
   const displayRoleAddressList = () => {

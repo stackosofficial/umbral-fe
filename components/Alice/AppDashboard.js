@@ -1,9 +1,8 @@
 import all from 'it-all';
 import React, { useEffect, useState } from 'react';
 import {
-    getAppsOfNFT
-    ,deleteApp
-} from '../../contracts/SmartContractFunctions';
+    ContractBasedDeployment
+} from "@pratikgohil.dev/stackos-v2contract-package";
 import styles from './styles/dashboard.module.css';
 import {decryptAppData, login} from './lib/decryptApp';
 import { uploadIpfsDataIntoCache, deleteAppFromCache } from './lib/ipfs';
@@ -15,7 +14,7 @@ import {ENCRYPT_ARGS} from './constants';
 const AppDashboard = ({selectedNFT, setCurrentTab, setAppData, nftRole, appList, setAppList}) => {
 
     const clickDeleteApp = async (app) => {
-        await deleteApp(selectedNFT, app.appName);
+        await ContractBasedDeployment.deleteApp(selectedNFT, app.appName);
     }
 
     const openApp = async (app) => {
@@ -48,7 +47,7 @@ const AppDashboard = ({selectedNFT, setCurrentTab, setAppData, nftRole, appList,
 
 
   const getAllApps = async () => {
-    let data = await getAppsOfNFT(selectedNFT);
+    let data = await ContractBasedDeployment.getAppsOfNFT(selectedNFT);
     // uploadIpfsDataIntoCache(data, selectedNFT);
     setAppList(data);
   };

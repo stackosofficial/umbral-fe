@@ -1,7 +1,8 @@
 import all from 'it-all';
 import React, { useEffect, useState } from 'react';
 import {deployApp, getPublicKey} from './lib/encryptApp';
-import { fetchAddressAndContracts, getAllSubnets } from '../../contracts/SmartContractFunctions';
+import Web3 from "web3";
+import { init, Registration } from "@pratikgohil.dev/stackos-v2contract-package";
 import {AppForm} from './AppForm';
 import AppDashboard from './AppDashboard';
 import NFTDashboard from './NFTDashboard';
@@ -47,25 +48,48 @@ const selectNFT = (nftID, nftRole) => {
 }
 
 const getSubnetList = async () => {
-  const data = await getAllSubnets();
-  const subnetList = data.map(subnet => subnet.subnetId);
-  const subnetNameList = data.map(subnet => subnet.subnetName);
-  setSubnetList(subnetList);
-  setSubnetNameList(subnetNameList);
-  console.log("subnets: ", subnetNameList);
+    const data = await Registration.getAllSubnetNamesAndIDs();
+    // console.log("subnet data: ", data);
+    // const data = await getAllSubnets();
+    const subnetList = data.map(subnet => Number(subnet.subnetID));
+    const subnetNameList = data.map(subnet => subnet.subnetName);
+    setSubnetList(subnetList);
+    setSubnetNameList(subnetNameList);
+    console.log("subnets: ",subnetList, subnetNameList);
 }
 
-  const getContractData = async () => {
+
+
+  const initContracts = async () => {
+    const addresses = {
+        deployer: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
+        xct: '0xAA2a95A342b774512c64799597bD75389e7d3C7a',
+        stack: '0x6fc6A5b592406D9ee1e9a4e6BA20E03e73165B3A',
+        nftToken: '0xBd422978E222C626b94e66f33791a61FbE662115',
+        Registration: '0x3A41dfF0bB941fC5A1392c4f06cD1113b06c3eE2',
+        appNFT: '0xd831912d86BE956A131cfe14E90C86c717407489',
+        SubscriptionBalanceCalculator: '0xbC7cD1F1f5e77A7042Fc6034E8e3818C60eb5900',
+        SubscriptionBalance: '0x7dAa10F02933960de968Cdd884dBc20487672128',
+        SubnetDAODistributor: '0x1eE9906e6AB8c53655c875119a396584cfe8FaaF',
+        Subscription: '0x5A6fDc20B1C0dAA5a21aC904a4cA238e43DAf757',
+        xctMinter: '0xb0fA41E2DF531C26dBA0E16D514381A816Aa2554',
+        ContractBasedDeployment: '0xc47EF4D1d3C2e18c02B2163A8dAB2F5B5099C3Ff'
+      }
     if(typeof window.ethereum !== "undefined" || (typeof window.web3 !== "undefined")) {
-      await fetchAddressAndContracts;
-      await getSubnetList();
+        let provider = window.ethereum;
+        const web3 = new Web3(provider);
+        await init(web3, addresses, window.ethereum.selectedAddress);
+        await getSubnetList();
     }
   }
 
+
+
   useEffect(() => {
-    getContractData();
+    initContracts();
     initAppCrypto();
   }, []);
+
 
 
   return (

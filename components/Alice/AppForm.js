@@ -3,23 +3,20 @@ import all from 'it-all';
 import React, { useEffect, useState } from 'react';
 import {encryptApp} from './lib/encryptApp';
 import {
-estimateETHForXCT,
-easyBuyXCT,
-getXCTBalance,
-getNFTBalance,
-getClustersOfSubnet,
-createApp,
-updateApp,
-getUserSubscription,
-getSubscribedSubnetsOfNFT,
-getPlatformData,
-getSupportFeesForNFT,
-estimateDripRateforSubnet
-} from '../../contracts/SmartContractFunctions';
+    XCTMinter,
+    XCT,
+    Subscription,
+    SubscriptionBalance,
+    SubscriptionBalanceCalculator,
+    Registration,
+    ContractBasedDeployment
+} from "@pratikgohil.dev/stackos-v2contract-package";
+
 import styles from './styles/appForm.module.css';
 import {RESOURCE_NAME_LIST, convertIPFSHash} from '../../contracts/utils';
-import {ENCRYPT_ARGS} from './constants';
+import {ENCRYPT_ARGS, XCT_SIZE} from './constants';
 import {sendToIPFS} from './lib/ipfs';
+import BN from 'bn.js';
 
 
 export const formatIPFSDataForUI = async (app, ipfsData, nftID) => {
@@ -28,7 +25,7 @@ export const formatIPFSDataForUI = async (app, ipfsData, nftID) => {
     appData.imageName = ipfsData.image.repository;
     appData.tag = ipfsData.image.tag;
 
-    const userSub = await getUserSubscription({nftID, subnetID: app.subnetList[0]});
+    const userSub = await Subscription.nftSubscription(nftID);
     appData.referralAddress = userSub.referralAddress;
     appData.licenseAddress = userSub.licenseAddress;
     appData.supportAddress = userSub.supportAddress;
@@ -46,9 +43,10 @@ export const formatIPFSDataForUI = async (app, ipfsData, nftID) => {
     appData.hostURL = ipfsData.hostUrl;
     appData.path = ipfsData.path;
     
-    for(var i = 0; i < app.subnetList.length; i++)
+    console.log("app data: ", app);
+    for(var i = 0; i < app.subnetIdList.length; i++)
     {
-        const subnetID = app.subnetList[i];
+        const subnetID = app.subnetIdList[i];
         appData[`subnet${subnetID}`] = true;
     }
 
@@ -271,25 +269,25 @@ const DripRateForm = ({
     return (
         <div className={styles.appFormComponent}>
             <div>
-                Subscription Balance: {subscriptionBalance/1000000000}
+                Subscription Balance: {subscriptionBalance.div(new BN(XCT_SIZE)).toString()}
             </div>
             <div>
-                Your XCT Balance: {xctBalance/1000000000}
+                Your XCT Balance: {xctBalance.div(new BN(XCT_SIZE)).toString()}
             </div>
             <Form.Item label='timePeriod' name="timePeriod">
               <Select options={timePeriod} onChange={setDripRate}/>
             </Form.Item>
             <div>
-                XCT To Add: {xctComputeAmount/1000000000}
+                XCT To Add: {xctComputeAmount.div(new BN(XCT_SIZE)).toString()}
             </div>
             <div>
-                XCT You Don't Have: {Math.max(0, xctComputeAmount - xctBalance)/1000000000}
+                XCT You Don't Have: {(xctComputeAmount.gt(xctBalance) ? xctComputeAmount.sub(xctBalance) : new BN(0)).div(new BN(XCT_SIZE)).toString()}
             </div>
             <div>
-                ETH required for purchasing XCT: {ethForXCTAmount/Math.pow(10,18)}
+                ETH required for purchasing XCT: {ethForXCTAmount.div(new BN(XCT_SIZE)).toString()}
             </div>
             <div>
-                <Button onClick={purchaseXCT} disabled={ethForXCTAmount == 0}>Mint XCT</Button>
+                <Button onClick={purchaseXCT} disabled={ethForXCTAmount.eq(0)}>Mint XCT</Button>
             </div>
         </div>   
     );
@@ -298,12 +296,13 @@ const DripRateForm = ({
 export const AppForm = ({formValues, subnets, isUpdate, selectedNFT, appList, setAppList}) => {
     const [form] = Form.useForm();
     const [selectedSubnetList, setSelectedSubnetList] = useState({});
-    const [subscriptionBalance, setSubscriptionBalance] = useState(0);
-    const [xctBalance, setXCTBalance] = useState(0);
-    const [xctComputeAmount, setXCTComputeAmount ] = useState(0);
-    const [ethForXCTAmount, setETHForXCTAmount] = useState(0);
+    const [subscriptionBalance, setSubscriptionBalance] = useState(new BN(0));
+    const [xctBalance, setXCTBalance] = useState(new BN(0));
+    const [xctComputeAmount, setXCTComputeAmount ] = useState(new BN(0));
+    const [ethForXCTAmount, setETHForXCTAmount] = useState(new BN(0));
     const [isFactorChanged, setFactorChange] = useState(false);
-    const [dripTimePeriod, setDripTimePeriod] = useState(0);
+    const [dripTimePeriod, setDripTimePeriod] = useState(new BN(0));
+    const [balanceEndTime, setBalanceEndTime] = useState(new BN(0));
 
     const selectSubnet = (index, e) => {
         selectedSubnetList[index] = e;
@@ -311,12 +310,11 @@ export const AppForm = ({formValues, subnets, isUpdate, selectedNFT, appList, se
     }
 
     const estimateXCT = async (xctAmount) => {
-        const amount = await estimateETHForXCT(xctAmount);
-        setETHForXCTAmount(amount);
+
     }
 
     const purchaseXCT = async () => {
-        await easyBuyXCT(ethForXCTAmount);
+        await XCTMinter.easyBuyXCT(ethForXCTAmount);
 
         await calcDripRate(dripTimePeriod);
     }
@@ -328,7 +326,7 @@ export const AppForm = ({formValues, subnets, isUpdate, selectedNFT, appList, se
         for(var i = 0; i < subnetList.length; i++)
         {
             const subnetID = subnetList[i];
-            const data = await getClustersOfSubnet(subnetID);
+            const data = await Registration.getClustersOfSubnet(subnetID);
             let publicKeyList = data.map(cluster => new Uint8Array(cluster.publicKey));
             let clusterIDList = data.map(cluster => cluster.clusterId);
 
@@ -398,23 +396,14 @@ export const AppForm = ({formValues, subnets, isUpdate, selectedNFT, appList, se
         }
     
         rlsAddressList = [
-            [],
-            [],
-            [],
-            []
-        ]
-        for(var i = 0; i < subnetList.length; i++)
-        {
-            rlsAddressList[0].push(values.referralAddress);
-            rlsAddressList[1].push(values.licenseAddress);
-            rlsAddressList[2].push(values.supportAddress);
-            rlsAddressList[3].push(values.platformAddress);
-        }
+        ];
+
+        rlsAddressList.push(values.referralAddress);
+        rlsAddressList.push(values.licenseAddress);
+        rlsAddressList.push(values.supportAddress);
+        rlsAddressList.push(values.platformAddress);
     
-        for(var i = 0; i < subnetList.length; i++)
-        {
-            licenseFeeList.push(Number(values.licenseFee));
-        }
+        licenseFeeList = [0, Number(values.licenseFee)]
     
     
         appName = values.appName;
@@ -451,7 +440,7 @@ export const AppForm = ({formValues, subnets, isUpdate, selectedNFT, appList, se
         formatParams.CID = CID;
 
         console.log("balance to add: ", formatParams.balanceToAdd);
-        await createApp(
+        await ContractBasedDeployment.createApp(
             formatParams.balanceToAdd,
             formatParams.nftID,
             formatParams.rlsAddressList,
@@ -462,7 +451,7 @@ export const AppForm = ({formValues, subnets, isUpdate, selectedNFT, appList, se
             formatParams.multiplier,
             formatParams.resourceArray,
             formatParams.lastUpdateTime,
-            formatParams.cidLock
+            [formatParams.cidLock, false]
           );
     }
 
@@ -480,7 +469,7 @@ export const AppForm = ({formValues, subnets, isUpdate, selectedNFT, appList, se
         const CID = payloadResponse.toString();
         formatParams.CID = CID;
  
-        await updateApp(
+        await ContractBasedDeployment.updateApp(
             formatParams.balanceToAdd,
             formatParams.nftID,
             formatParams.rlsAddressList,
@@ -517,63 +506,93 @@ export const AppForm = ({formValues, subnets, isUpdate, selectedNFT, appList, se
             if(appList[i].appName == updatedApp.appName)
             {
                 appList[i] = updatedApp;
+                break;
             }
         }
 
         setAppList([...appList]);
     }
 
+
     const calcDripRate = async (timePeriod) => {
+        const {
+            subscriptionBalance,
+            xctBalance,
+            xctTotal,
+            ETHToConvert
+        } = await getDripCost(timePeriod);
+
+        setSubscriptionBalance(subscriptionBalance);
+        setXCTBalance(xctBalance);
+        setXCTComputeAmount(xctTotal);
+        setETHForXCTAmount(ETHToConvert);
+        setDripTimePeriod(timePeriod);
+    }
+
+    const getDripCost = async (timePeriod) => {
+        let errorMessage;
+
         let values = form.getFieldsValue();
         values = formatParamsForCreateApp(values);
 
         const nftID = values.nftID;
+        timePeriod = new BN(timePeriod);
 
-        let subscribedSubnets = await getSubscribedSubnetsOfNFT({nftID: values.nftID});
+        let subscribedSubnets = await Subscription.getSubscribedSubnetsOfNFT(values.nftID);
         subscribedSubnets = subscribedSubnets.map(subnet => Number(subnet));
+
 
         const dripFactorList = {
           subnetList: [],
-          supportFeeList: [],
-          platformFeeList: [],
-          referralPercentList: [],
-          discountList: [],
-          licenseList: [],
-          computeList: []
+          licenseFactor1: 0,
+          licenseFactor2: 0,
+          supportFactor1: 0,
+          suportFactor2: 0,
+          referralFactor: 0,
+          platformFactor: 0,
+          discountFactor: 0,
+          computeRequired: [],
         };
     
     
+        console.log("formated values: ", values);
+        let supportFactor = 0;
+        let platformData = {};
+
+        if(isUpdate)
+        {
+            const userSub = await Subscription.getNFTSubscription({nftID, subnetID});
+            supportFactor = userSub.supportPercentage;
+    
+            const platformAddress = userSub.platformAddress;
+            platformData = await Subscription.platformAddressMap({platformAddress: platformAddress});
+
+        }
+        else {
+            const supportAddress = values.rlsAddressList[2];
+            supportFactor = await Subscription.getSupportFeesForNFT({supportAddress: supportAddress, nftID});
+            supportFactor = [Number(supportFactor[0]), Number(supportFactor[1])];
+
+            const platformAddress = values.rlsAddressList[3];
+            platformData = await Subscription.platformAddressMap({platformAddress: platformAddress});
+            console.log("got supprtFacto r:", supportFactor, {supportAddress: supportAddress, nftID});
+        }
+
         for(var i = 0; i < values.subnetList.length; i++)
         {
           const subnetID = values.subnetList[i];
-          let supportPercent = 0;
+          
           
           let multipliedCompute = [...values.resourceArray];
-          const licenseFee = values.licenseFeeList[i];
-          let platformData = {};
-    
-    
+
           if(subscribedSubnets.includes(subnetID))
-          {
-            const userSub = await getUserSubscription({nftID, subnetID});
-            supportPercent = userSub.supportPercentage;
-    
-            const platformAddress = userSub.platformAddress;
-            platformData = await getPlatformData({platformAddress: platformAddress});
-    
-    
+          {    
             for(var j = 0; j < multipliedCompute.length; j++)
             {
               multipliedCompute[j] *= values.multiplier[i][0][j];
             }
           }
           else {
-            const supportAddress = values.rlsAddressList[2][i];
-            supportPercent = await getSupportFeesForNFT({supportAddress: supportAddress, nftID});
-    
-            const platformAddress = values.rlsAddressList[3][i];
-            platformData = await getPlatformData({platformAddress: platformAddress});
-        
             for(var j = 0; j < multipliedCompute.length; j++)
             {
               multipliedCompute[j] *= values.multiplier[i][0][j];
@@ -582,40 +601,56 @@ export const AppForm = ({formValues, subnets, isUpdate, selectedNFT, appList, se
     
 
           dripFactorList.subnetList.push(subnetID);
-          dripFactorList.supportFeeList.push(supportPercent);
-          dripFactorList.platformFeeList.push(platformData.platformPercentage);
-          dripFactorList.referralPercentList.push(platformData.referralPercentage);
-          dripFactorList.discountList.push(platformData.discountPercentage);
-          dripFactorList.licenseList.push(licenseFee);
-          dripFactorList.computeList.push(multipliedCompute);
+          dripFactorList.computeRequired.push(multipliedCompute);
         }
     
-    
-        let fee = await estimateDripRateforSubnet(dripFactorList);
+    const params = {
+        subnetList: dripFactorList.subnetList,
+        computeRequired: dripFactorList.computeRequired,
+        dripFactor:
+        [
+            values.licenseFeeList[0],
+            values.licenseFeeList[1],
+            supportFactor[0],
+            supportFactor[1],
+            platformData.referralPercentage,
+            platformData.platformPercentage,
+            platformData.discountPercentage
+        ]
+    };
+    console.log("check p arams: ", params);
+        const dripRate = new BN(await SubscriptionBalanceCalculator.estimateDripRatePerSec(
+            params
+        ));
+        console.log("drip rate: ", dripRate.toString());
+        const subBal = new BN(await SubscriptionBalance.totalPrevBalance(nftID));
+        const xctBal = new BN(await XCT.balanceOf(window.ethereum.selectedAddress));
+        const xctComputeTotal = dripRate.mul(timePeriod);
 
-        console.log("fee: ", fee, timePeriod);
-
-        let xctComputeTotal = fee * timePeriod;
-        setXCTComputeAmount(xctComputeTotal);
-
-        
-        const subBal = await getNFTBalance(nftID);
-        setSubscriptionBalance(subBal);
-
-        const xctBal = await getXCTBalance(window.ethereum.selectedAddress);
-        setXCTBalance(xctBal);
-        
-        console.log("subBal: ", subBal, xctBal);
-
-        const amountOfXCTForConvert = Math.max(0, xctComputeTotal - xctBal);
-        if(amountOfXCTForConvert > 0) {
-            await estimateXCT(amountOfXCTForConvert);
+        let ETHAmount = new BN(0);
+        if(xctComputeTotal.gt(xctBal)) {
+            try {
+                const xctToConvert = xctComputeTotal.sub(xctBal);
+                ETHAmount = new BN(await XCTMinter.estimateETHForXCT(xctToConvert));
+                const extraAmount = EthAmount.div(new BN(10));
+                ETHAmount = ETHAmount.add(extraAmount);
+            }
+            catch(err) {
+                errorMessage = "Failed to convert: " + err;
+            }
         }
-        else {
-            setETHForXCTAmount(0);
-        }
 
-        setDripTimePeriod(timePeriod);
+        console.log("eth amount: ", ETHAmount);
+
+
+        return {
+            subscriptionBalance: subBal,
+            xctBalance: xctBal,
+            xctTotal: xctComputeTotal,
+            ETHToConvert: ETHAmount,
+            timePeriod: timePeriod,
+            error: errorMessage
+        };
     }
 
 
@@ -650,10 +685,10 @@ export const AppForm = ({formValues, subnets, isUpdate, selectedNFT, appList, se
     useEffect(
         () => {
             (async () => {
-                const xctBal = await getXCTBalance(window.ethereum.selectedAddress);
+                const xctBal = new BN(await XCT.balanceOf(window.ethereum.selectedAddress));
                 setXCTBalance(xctBal);
 
-                const subBal = await getNFTBalance(selectedNFT);
+                const subBal = new BN(await SubscriptionBalance.totalPrevBalance(selectedNFT));
                 setSubscriptionBalance(subBal);
             })();
         },
