@@ -9,7 +9,7 @@
     "@metamask/eth-sig-util": "^5.0.2",
     "@mithun297/stackos-v2-appcrypto": "^1.0.0",
     "@nucypher/umbral-pre": "0.7.0",
-    "@pratikgohil.dev/stackos-v2contract-package": "1.1.6",
+    "@pratikgohil.dev/stackos-v2contract-package": "1.4.1",
     "antd": "^5.1.6",
     "axios": "^1.2.6",
     "bn.js": "^5.2.1",

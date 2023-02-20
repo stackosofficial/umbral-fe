@@ -59,18 +59,18 @@ const fetchAddressAndContracts = new Promise(async (resolve, reject) => {
   defaultOptions = { from: selectedAccount };
 
   const contractAddresses = {
-    deployer: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
-    xct: '0xAA2a95A342b774512c64799597bD75389e7d3C7a',
-    stack: '0x6fc6A5b592406D9ee1e9a4e6BA20E03e73165B3A',
-    nftToken: '0xBd422978E222C626b94e66f33791a61FbE662115',
-    Registration: '0x3A41dfF0bB941fC5A1392c4f06cD1113b06c3eE2',
-    appNFT: '0x4ef58923c7e99598DAEB00CCE5315cAD9Efa3761',
-    SubscriptionBalanceCalculator: '0xaEDA30eC4368181EFa71Ea32fb57c673Ab930f8f',
-    SubscriptionBalance: '0x5c8065532AFfF0A784E42F9C56A3d6eDBF705301',
-    SubnetDAODistributor: '0x302fa13977843Ee12F7Bde13E8b2F13023d0994C',
-    Subscription: '0x64A11d414D66819e17e8Cbe6A37E7Fd90021C890',
-    xctMinter: '0xaF15B6Db0b6220391007701228883BA2f04D04F9',
-    ContractBasedDeployment: '0xb20F65c1D442ebcebce7C377ea47e480c0aB453C'
+    deployer: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    xct: "0xf3C8D517ba8462911Cc2b8cfedc5dDeC50DFCBd6",
+    stack: "0x06816f66538CB5bf17243F6C404D841e0ac96B69",
+    nftToken: "0xa55e9d5F4321D7f2EA862DF776a02aF6FAfcf4F9",
+    Registration: "0xb0fA41E2DF531C26dBA0E16D514381A816Aa2554",
+    appNFT: "0x0b943500AA8A8BbB8992654e57511f1CEfb2BB9f",
+    SubscriptionBalanceCalculator: "0xb20F65c1D442ebcebce7C377ea47e480c0aB453C",
+    SubscriptionBalance: "0x8F1dFbBD777c82aC30E587483d8a251f32f8a6E6",
+    SubnetDAODistributor: "0x67130B50Be53849B2E3Bbd9B8263F66baD9A1a5c",
+    Subscription: "0x3C3297C2Be0F0C51b604dC0A798cF610d7406De2",
+    xctMinter: "0xC20654dB7F9483f10c91dc94924dC8F04F79bfd5",
+    ContractBasedDeployment: "0x770ace66dd84B035F71FfC977448032EE688604d",
   };
   DarkMatterNftContract = new web3.eth.Contract(
     DarkMatterNFT,
@@ -693,16 +693,16 @@ const getSupportFeesForNFT = async (values) => {
 };
 
 const getNFTSubscription = async (values) => {
-    const userSubscription = await sendTransaction(
-      false,
-      SubscriptionContract,
-      "nftSubscription",
-      defaultOptions,
-      values.nftID,
-    );
-  
-    return userSubscription;
-  };
+  const userSubscription = await sendTransaction(
+    false,
+    SubscriptionContract,
+    "nftSubscription",
+    defaultOptions,
+    values.nftID
+  );
+
+  return userSubscription;
+};
 
 const getUserSubscription = async (values) => {
   const userSubscription = await sendTransaction(
@@ -760,22 +760,21 @@ const getAllSubnetID = async () => {
   return subnetList;
 };
 
-const estimateDripRatePerSec= async (values) => {
+const estimateDripRatePerSec = async (values) => {
   const dripRate = await sendTransaction(
     false,
     SubscriptionBalanceCalculatorContract,
     "estimateDripRatePerSec",
     defaultOptions,
-        values.subnetList,
+    values.subnetList,
     [
-        values.licenseFactor1,
-        values.licenseFactor2,
-        values.supportFactor1,
-        values.supportFactor2,
-        values.referralFactor,
-        values.platformFactor,
-        values.discountFactor,
-
+      values.licenseFactor1,
+      values.licenseFactor2,
+      values.supportFactor1,
+      values.supportFactor2,
+      values.referralFactor,
+      values.platformFactor,
+      values.discountFactor,
     ],
     values.computeList
   );
@@ -1134,11 +1133,11 @@ const estimateETHForXCT = async (amount) => {
     "estimateETHForXCT",
     defaultOptions,
     amount
-  )
-}
+  );
+};
 
 const easyBuyXCT = async (amount) => {
-  let options = {...defaultOptions};
+  let options = { ...defaultOptions };
   options.value = amount;
   return await sendTransaction(true, XCTMinterContract, "easyBuyXCT", options);
 };
@@ -1240,5 +1239,5 @@ export {
   getPlatformData,
   getSubscriptionComputes,
   estimateETHForXCT,
-  getNFTSubscription
+  getNFTSubscription,
 };

@@ -1,2028 +1,1888 @@
 const ABI = [
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "NFTId",
-        "type": "uint256"
+        indexed: false,
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "subnetId",
-        "type": "uint256"
+        indexed: false,
+        internalType: "address",
+        name: "supportAddress",
+        type: "address",
       },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "supportAddress",
-        "type": "address"
-      }
     ],
-    "name": "AppliedSupportChange",
-    "type": "event"
+    name: "AppliedSupportChange",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "prev_limit",
-        "type": "uint256"
+        indexed: false,
+        internalType: "uint256",
+        name: "prev_limit",
+        type: "uint256",
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "new_limit",
-        "type": "uint256"
-      }
+        indexed: false,
+        internalType: "uint256",
+        name: "new_limit",
+        type: "uint256",
+      },
     ],
-    "name": "ChangedMinTimeFunds",
-    "type": "event"
+    name: "ChangedMinTimeFunds",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "prev_limit",
-        "type": "uint256"
+        indexed: false,
+        internalType: "uint256",
+        name: "prev_limit",
+        type: "uint256",
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "new_limit",
-        "type": "uint256"
-      }
+        indexed: false,
+        internalType: "uint256",
+        name: "new_limit",
+        type: "uint256",
+      },
     ],
-    "name": "ChangedNFTSubnetLimit",
-    "type": "event"
+    name: "ChangedNFTSubnetLimit",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "prev_limit",
-        "type": "uint256"
+        indexed: false,
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "new_limit",
-        "type": "uint256"
-      }
-    ],
-    "name": "ChangedServiceAddressCooldown",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "prev_limit",
-        "type": "uint256"
+        indexed: false,
+        internalType: "uint256",
+        name: "currentSubnetID",
+        type: "uint256",
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "new_limit",
-        "type": "uint256"
-      }
+        indexed: false,
+        internalType: "uint256",
+        name: "newSubnetID",
+        type: "uint256",
+      },
     ],
-    "name": "ChangedServiceAddressNotice",
-    "type": "event"
+    name: "ChangedSubnetSubscription",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "NFTId",
-        "type": "uint256"
+        indexed: false,
+        internalType: "uint256",
+        name: "prev_limit",
+        type: "uint256",
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "currentSubnetId",
-        "type": "uint256"
+        indexed: false,
+        internalType: "uint256",
+        name: "new_limit",
+        type: "uint256",
       },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newSubnetId",
-        "type": "uint256"
-      }
     ],
-    "name": "ChangedSubnetSubscription",
-    "type": "event"
+    name: "ChangedSupportAddressCooldown",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "prev_limit",
-        "type": "uint256"
+        indexed: false,
+        internalType: "uint256",
+        name: "prev_limit",
+        type: "uint256",
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "new_limit",
-        "type": "uint256"
-      }
+        indexed: false,
+        internalType: "uint256",
+        name: "new_limit",
+        type: "uint256",
+      },
     ],
-    "name": "ChangedSupportAddressCooldown",
-    "type": "event"
+    name: "ChangedSupportAddressNotice",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
+      },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "prev_limit",
-        "type": "uint256"
+        indexed: false,
+        internalType: "uint256",
+        name: "subnetID",
+        type: "uint256",
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "new_limit",
-        "type": "uint256"
-      }
+        indexed: false,
+        internalType: "bool",
+        name: "allow",
+        type: "bool",
+      },
     ],
-    "name": "ChangedSupportAddressNotice",
-    "type": "event"
+    name: "Changed_CHANGE_SUBSCRIPTION",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "nftId",
-        "type": "uint256"
+        indexed: false,
+        internalType: "uint256",
+        name: "NFTid",
+        type: "uint256",
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "subnetId",
-        "type": "uint256"
+        indexed: false,
+        internalType: "uint256",
+        name: "subnetId",
+        type: "uint256",
       },
       {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "allow",
-        "type": "bool"
-      }
+        indexed: false,
+        internalType: "uint256[]",
+        name: "computeRequired",
+        type: "uint256[]",
+      },
     ],
-    "name": "Changed_CHANGE_SUBSCRIPTION",
-    "type": "event"
+    name: "Computes_changed",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "NFTid",
-        "type": "uint256"
+        indexed: false,
+        internalType: "uint8",
+        name: "version",
+        type: "uint8",
       },
+    ],
+    name: "Initialized",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "subnetId",
-        "type": "uint256"
+        indexed: false,
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
       {
-        "indexed": false,
-        "internalType": "uint256[]",
-        "name": "computeRequired",
-        "type": "uint256[]"
-      }
+        indexed: false,
+        internalType: "address",
+        name: "licenseAddress",
+        type: "address",
+      },
     ],
-    "name": "Computes_changed",
-    "type": "event"
+    name: "LicenseAdded",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
+      },
       {
-        "indexed": false,
-        "internalType": "uint8",
-        "name": "version",
-        "type": "uint8"
-      }
+        indexed: false,
+        internalType: "address",
+        name: "supportAddress",
+        type: "address",
+      },
     ],
-    "name": "Initialized",
-    "type": "event"
+    name: "NFTSupportAddressChanged",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "NFTId",
-        "type": "uint256"
+        indexed: false,
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "subnetId",
-        "type": "uint256"
+        indexed: false,
+        internalType: "uint256[]",
+        name: "supportFactor",
+        type: "uint256[]",
       },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "licenseAddress",
-        "type": "address"
-      }
     ],
-    "name": "LicenseAdded",
-    "type": "event"
+    name: "NFTSupportFactorChanged",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": false,
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
+        indexed: false,
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
     ],
-    "name": "Paused",
-    "type": "event"
+    name: "Paused",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "NFTId",
-        "type": "uint256"
+        indexed: false,
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "subnetId",
-        "type": "uint256"
+        indexed: false,
+        internalType: "address",
+        name: "referralAddress",
+        type: "address",
       },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "referralAddress",
-        "type": "address"
-      }
     ],
-    "name": "ReferralAdded",
-    "type": "event"
+    name: "ReferralAdded",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "nftID",
-        "type": "uint256"
+        indexed: false,
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "subnetID",
-        "type": "uint256"
+        indexed: false,
+        internalType: "address",
+        name: "newSupportAddress",
+        type: "address",
       },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "newSupportAddress",
-        "type": "address"
-      }
     ],
-    "name": "RequestedSupportChange",
-    "type": "event"
+    name: "RequestedSupportChange",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
+        indexed: true,
+        internalType: "bytes32",
+        name: "role",
+        type: "bytes32",
       },
       {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "previousAdminRole",
-        "type": "bytes32"
+        indexed: true,
+        internalType: "bytes32",
+        name: "previousAdminRole",
+        type: "bytes32",
       },
       {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "newAdminRole",
-        "type": "bytes32"
-      }
+        indexed: true,
+        internalType: "bytes32",
+        name: "newAdminRole",
+        type: "bytes32",
+      },
     ],
-    "name": "RoleAdminChanged",
-    "type": "event"
+    name: "RoleAdminChanged",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
+        indexed: true,
+        internalType: "bytes32",
+        name: "role",
+        type: "bytes32",
       },
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
+        indexed: true,
+        internalType: "address",
+        name: "account",
+        type: "address",
       },
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "sender",
-        "type": "address"
-      }
+        indexed: true,
+        internalType: "address",
+        name: "sender",
+        type: "address",
+      },
     ],
-    "name": "RoleGranted",
-    "type": "event"
+    name: "RoleGranted",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
+        indexed: true,
+        internalType: "bytes32",
+        name: "role",
+        type: "bytes32",
       },
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
+        indexed: true,
+        internalType: "address",
+        name: "account",
+        type: "address",
       },
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "sender",
-        "type": "address"
-      }
+        indexed: true,
+        internalType: "address",
+        name: "sender",
+        type: "address",
+      },
     ],
-    "name": "RoleRevoked",
-    "type": "event"
+    name: "RoleRevoked",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "NFTId",
-        "type": "uint256"
+        indexed: false,
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "subnetId",
-        "type": "uint256"
+        indexed: false,
+        internalType: "address",
+        name: "referralAddress",
+        type: "address",
       },
       {
-        "indexed": false,
-        "internalType": "address",
-        "name": "referralAddress",
-        "type": "address"
+        indexed: false,
+        internalType: "address",
+        name: "licenseAddress",
+        type: "address",
       },
       {
-        "indexed": false,
-        "internalType": "address",
-        "name": "licenseAddress",
-        "type": "address"
+        indexed: false,
+        internalType: "address",
+        name: "supportAddress",
+        type: "address",
       },
       {
-        "indexed": false,
-        "internalType": "address",
-        "name": "supportAddress",
-        "type": "address"
+        indexed: false,
+        internalType: "address",
+        name: "platformAddress",
+        type: "address",
       },
       {
-        "indexed": false,
-        "internalType": "address",
-        "name": "platformAddress",
-        "type": "address"
+        indexed: false,
+        internalType: "uint256[]",
+        name: "licenseFactor",
+        type: "uint256[]",
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "licenseFee",
-        "type": "uint256"
+        indexed: false,
+        internalType: "uint256[]",
+        name: "supportFactor",
+        type: "uint256[]",
       },
-      {
-        "indexed": false,
-        "internalType": "int256[]",
-        "name": "deltaCompute",
-        "type": "int256[]"
-      }
     ],
-    "name": "Subscribed",
-    "type": "event"
+    name: "Subscribed",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
+      },
       {
-        "indexed": false,
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
+        indexed: false,
+        internalType: "uint256",
+        name: "subnetID",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "int256[]",
+        name: "deltaComputes",
+        type: "int256[]",
+      },
     ],
-    "name": "Unpaused",
-    "type": "event"
+    name: "SubscribedSubnet",
+    type: "event",
   },
   {
-    "inputs": [],
-    "name": "ApplicationNFT",
-    "outputs": [
+    anonymous: false,
+    inputs: [
       {
-        "internalType": "contract IERC721",
-        "name": "",
-        "type": "address"
-      }
+        indexed: false,
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    name: "Unpaused",
+    type: "event",
   },
   {
-    "inputs": [],
-    "name": "BRIDGE_ROLE",
-    "outputs": [
+    inputs: [],
+    name: "ApplicationNFT",
+    outputs: [
       {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
+        internalType: "contract IApplicationNFT",
+        name: "",
+        type: "address",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [],
-    "name": "CHANGE_COMPUTE_ROLE",
-    "outputs": [
+    inputs: [],
+    name: "BRIDGE_ROLE",
+    outputs: [
       {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [],
-    "name": "CHANGE_REQUEST_DURATION",
-    "outputs": [
+    inputs: [],
+    name: "BalanceCalculator",
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "supportAddressNoticeDuration",
-        "type": "uint256"
+        internalType: "contract IBalanceCalculator",
+        name: "",
+        type: "address",
       },
-      {
-        "internalType": "uint256",
-        "name": "supportAddressCooldownDuration",
-        "type": "uint256"
-      }
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [],
-    "name": "CHANGE_SUBSCRIPTION_ROLE",
-    "outputs": [
+    inputs: [],
+    name: "CHANGE_COMPUTE_ROLE",
+    outputs: [
       {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [],
-    "name": "DEFAULT_ADMIN_ROLE",
-    "outputs": [
+    inputs: [],
+    name: "CHANGE_REQUEST_DURATION",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "supportAddressNoticeDuration",
+        type: "uint256",
+      },
       {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
+        internalType: "uint256",
+        name: "supportAddressCooldownDuration",
+        type: "uint256",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [],
-    "name": "GLOBAL_DAO_ADDRESS",
-    "outputs": [
+    inputs: [],
+    name: "CHANGE_SUBSCRIPTION_ROLE",
+    outputs: [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [],
-    "name": "GLOBAL_SUPPORT_ADDRESS",
-    "outputs": [
+    inputs: [],
+    name: "DEFAULT_ADMIN_ROLE",
+    outputs: [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [],
-    "name": "LIMIT_NFT_SUBNETS",
-    "outputs": [
+    inputs: [],
+    name: "GLOBAL_DAO_ADDRESS",
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [],
-    "name": "MIN_TIME_FUNDS",
-    "outputs": [
+    inputs: [],
+    name: "GLOBAL_SUPPORT_ADDRESS",
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [],
-    "name": "RegistrationContract",
-    "outputs": [
+    inputs: [],
+    name: "LIMIT_NFT_SUBNETS",
+    outputs: [
       {
-        "internalType": "contract IRegistration",
-        "name": "",
-        "type": "address"
-      }
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [],
-    "name": "SUBSCRIBE_ROLE",
-    "outputs": [
+    inputs: [],
+    name: "MIN_TIME_FUNDS",
+    outputs: [
       {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [],
-    "name": "SubscriptionBalance",
-    "outputs": [
+    inputs: [],
+    name: "RegistrationContract",
+    outputs: [
       {
-        "internalType": "contract ISubscriptionBalance",
-        "name": "",
-        "type": "address"
-      }
+        internalType: "contract IRegistration",
+        name: "",
+        type: "address",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [],
-    "name": "WITHDRAW_CREDITS_ROLE",
-    "outputs": [
+    inputs: [],
+    name: "SUBSCRIBE_ROLE",
+    outputs: [
       {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [],
-    "name": "XCT",
-    "outputs": [
+    inputs: [],
+    name: "SubscriptionBalance",
+    outputs: [
       {
-        "internalType": "contract IERC20Upgradeable",
-        "name": "",
-        "type": "address"
-      }
+        internalType: "contract ISubscriptionBalance",
+        name: "",
+        type: "address",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [],
+    name: "WITHDRAW_CREDITS_ROLE",
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
       },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
     ],
-    "name": "activeSubnetsOfNFT",
-    "outputs": [
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "XCT",
+    outputs: [
       {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
+        internalType: "contract IERC20Upgradeable",
+        name: "",
+        type: "address",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "nftID",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
       {
-        "internalType": "uint256",
-        "name": "subnetID",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
-      {
-        "internalType": "int256[]",
-        "name": "deltaCompute",
-        "type": "int256[]"
-      }
     ],
-    "name": "addDeltaComputes",
-    "outputs": [
+    name: "activeSubnetsOfNFT",
+    outputs: [
       {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
-      }
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "platformAddress",
-        "type": "address"
+        internalType: "address",
+        name: "platformAddress",
+        type: "address",
       },
       {
-        "internalType": "uint256",
-        "name": "platformPercentage",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "platformPercentage",
+        type: "uint256",
       },
       {
-        "internalType": "uint256",
-        "name": "discountPercentage",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "discountPercentage",
+        type: "uint256",
       },
       {
-        "internalType": "uint256",
-        "name": "referralPercentage",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "referralPercentage",
+        type: "uint256",
       },
       {
-        "internalType": "uint256",
-        "name": "referralDuration",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "referralDuration",
+        type: "uint256",
+      },
     ],
-    "name": "addPlatformAddress",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "addPlatformAddress",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "nftOwner",
-        "type": "address"
+        internalType: "address",
+        name: "nftOwner",
+        type: "address",
       },
       {
-        "internalType": "uint256",
-        "name": "_nftId",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
       {
-        "internalType": "uint256",
-        "name": "_subnetId",
-        "type": "uint256"
+        internalType: "address",
+        name: "referralAddress",
+        type: "address",
       },
-      {
-        "internalType": "address",
-        "name": "_referralAddress",
-        "type": "address"
-      }
     ],
-    "name": "addReferralAddress",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "addReferralAddress",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "supportAddress",
-        "type": "address"
+        internalType: "address",
+        name: "supportAddress",
+        type: "address",
       },
-      {
-        "internalType": "uint256",
-        "name": "defaultPercentage",
-        "type": "uint256"
-      }
-    ],
-    "name": "addSupportAddress",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
       {
-        "internalType": "address",
-        "name": "_newGlobalDAO",
-        "type": "address"
-      }
+        internalType: "uint256[]",
+        name: "supportFactor",
+        type: "uint256[]",
+      },
     ],
-    "name": "admin_changeGlobalDAO",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "addSupportAddress",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "_new_MIN_TIME_FUNDS",
-        "type": "uint256"
-      }
+        internalType: "address",
+        name: "newGlobalDAO",
+        type: "address",
+      },
     ],
-    "name": "admin_changeMinTimeFunds",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "admin_changeGlobalDAO",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "_new_LIMIT_NFT_SUBNETS",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "newMinTimeFunds",
+        type: "uint256",
+      },
     ],
-    "name": "admin_changeNFTSubnetLimit",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "admin_changeMinTimeFunds",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "supportAddressCooldownDuration",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "newSubnetLimit",
+        type: "uint256",
+      },
     ],
-    "name": "admin_changeSupportAddressCooldown",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "admin_changeNFTSubnetLimit",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "supportAddressNoticeDuration",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "supportAddressCooldownDuration",
+        type: "uint256",
+      },
     ],
-    "name": "admin_changeSupportAddressNotice",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "admin_changeSupportAddressCooldown",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "nftOwner",
-        "type": "address"
-      },
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "nftID",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "supportAddressNoticeDuration",
+        type: "uint256",
       },
-      {
-        "internalType": "uint256",
-        "name": "subnetID",
-        "type": "uint256"
-      }
     ],
-    "name": "applySupportChange",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "admin_changeSupportAddressNotice",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "nftOwner",
-        "type": "address"
+        internalType: "address",
+        name: "nftOwner",
+        type: "address",
       },
       {
-        "internalType": "uint256",
-        "name": "nftID",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
-      {
-        "internalType": "uint256",
-        "name": "subnetID",
-        "type": "uint256"
-      }
     ],
-    "name": "applySupportPercentage",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "applySupportChange",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "nftOwner",
-        "type": "address"
+        internalType: "address",
+        name: "nftOwner",
+        type: "address",
       },
       {
-        "internalType": "uint256",
-        "name": "nftID",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
       {
-        "internalType": "uint256",
-        "name": "subnetID",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "subnetID",
+        type: "uint256",
+      },
     ],
-    "name": "approveNewSupportFees",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "approveNewSupportFactor",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "subscriber",
-        "type": "address"
+        internalType: "address",
+        name: "caller",
+        type: "address",
       },
       {
-        "internalType": "uint256",
-        "name": "nftID",
-        "type": "uint256"
+        internalType: "address",
+        name: "newLicenseAddress",
+        type: "address",
       },
       {
-        "internalType": "uint256",
-        "name": "subnetID",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
-      {
-        "internalType": "uint256[]",
-        "name": "computeRequired",
-        "type": "uint256[]"
-      }
     ],
-    "name": "changeComputesOfSubnet",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "changeLicenseAddress",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "caller",
-        "type": "address"
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
       {
-        "internalType": "address",
-        "name": "newLicenseAddress",
-        "type": "address"
+        internalType: "uint256",
+        name: "subnetID",
+        type: "uint256",
       },
       {
-        "internalType": "uint256",
-        "name": "nftID",
-        "type": "uint256"
+        internalType: "bool",
+        name: "allow",
+        type: "bool",
       },
-      {
-        "internalType": "uint256",
-        "name": "subnetID",
-        "type": "uint256"
-      }
     ],
-    "name": "changeLicenseAddress",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "changeSubscriptionStatus",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "nftOwner",
-        "type": "address"
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
       {
-        "internalType": "uint256",
-        "name": "_nftId",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "subnetID",
+        type: "uint256",
       },
+    ],
+    name: "checkSubscribed",
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "_currentSubnetId",
-        "type": "uint256"
+        internalType: "bool",
+        name: "",
+        type: "bool",
       },
-      {
-        "internalType": "uint256",
-        "name": "_newSubnetId",
-        "type": "uint256"
-      }
     ],
-    "name": "changeSubnetSubscription",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "_nftId",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
+    ],
+    name: "getActiveSubnetsOfNFT",
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "_subnetId",
-        "type": "uint256"
+        internalType: "bool[]",
+        name: "",
+        type: "bool[]",
       },
-      {
-        "internalType": "bool",
-        "name": "allow",
-        "type": "bool"
-      }
     ],
-    "name": "changeSubscriptionStatus",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "nftID",
-        "type": "uint256"
+        internalType: "string",
+        name: "roleName",
+        type: "string",
       },
-      {
-        "internalType": "uint256",
-        "name": "subnetID",
-        "type": "uint256"
-      }
     ],
-    "name": "checkSubscribed",
-    "outputs": [
+    name: "getBytes32OfRole",
+    outputs: [
       {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "pure",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "nftID",
-        "type": "uint256"
-      }
-    ],
-    "name": "getActiveSubnetsOfNFT",
-    "outputs": [
-      {
-        "internalType": "bool[]",
-        "name": "",
-        "type": "bool[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
+      },
       {
-        "internalType": "string",
-        "name": "_roleName",
-        "type": "string"
-      }
+        internalType: "uint256",
+        name: "subnetID",
+        type: "uint256",
+      },
     ],
-    "name": "getBytes32OfRole",
-    "outputs": [
+    name: "getComputesOfSubnet",
+    outputs: [
       {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
+        internalType: "uint256[]",
+        name: "",
+        type: "uint256[]",
+      },
     ],
-    "stateMutability": "pure",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "NFTid",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
-      {
-        "internalType": "uint256",
-        "name": "subnetId",
-        "type": "uint256"
-      }
     ],
-    "name": "getComputesOfSubnet",
-    "outputs": [
+    name: "getLicenseAddress",
+    outputs: [
       {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
-      }
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "_nftId",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
-      {
-        "internalType": "uint256",
-        "name": "_subnetId",
-        "type": "uint256"
-      }
     ],
-    "name": "getLicenseAddress",
-    "outputs": [
+    name: "getNFTSubscription",
+    outputs: [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
+        components: [
+          {
+            internalType: "address",
+            name: "referralAddress",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "licenseAddress",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "supportAddress",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "platformAddress",
+            type: "address",
+          },
+          {
+            internalType: "uint256[]",
+            name: "licenseFactor",
+            type: "uint256[]",
+          },
+          {
+            internalType: "uint256[]",
+            name: "supportFactor",
+            type: "uint256[]",
+          },
+          {
+            internalType: "uint256",
+            name: "createTime",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct Subscription.NFTAttribute",
+        name: "nftAttribute",
+        type: "tuple",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "_nftId",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
-      {
-        "internalType": "uint256",
-        "name": "_subnetId",
-        "type": "uint256"
-      }
     ],
-    "name": "getPlatformAddress",
-    "outputs": [
+    name: "getPlatformAddress",
+    outputs: [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "_nftId",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
-      {
-        "internalType": "uint256",
-        "name": "_subnetId",
-        "type": "uint256"
-      }
     ],
-    "name": "getReferralAddress",
-    "outputs": [
+    name: "getReferralAddress",
+    outputs: [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "nftID",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
-      {
-        "internalType": "uint256",
-        "name": "subnetID",
-        "type": "uint256"
-      }
     ],
-    "name": "getReferralDuration",
-    "outputs": [
+    name: "getReferralDuration",
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
-      }
+        internalType: "bytes32",
+        name: "role",
+        type: "bytes32",
+      },
     ],
-    "name": "getRoleAdmin",
-    "outputs": [
+    name: "getRoleAdmin",
+    outputs: [
       {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "nftID",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
+      },
     ],
-    "name": "getSubnetsOfNFT",
-    "outputs": [
+    name: "getSubnetsOfNFT",
+    outputs: [
       {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
-      }
+        internalType: "uint256[]",
+        name: "",
+        type: "uint256[]",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "nftID",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
+      },
     ],
-    "name": "getSubscribedSubnetsOfNFT",
-    "outputs": [
+    name: "getSubscribedSubnetsOfNFT",
+    outputs: [
       {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
+        internalType: "uint256[]",
+        name: "",
+        type: "uint256[]",
       },
       {
-        "internalType": "bool[]",
-        "name": "",
-        "type": "bool[]"
-      }
+        internalType: "bool[]",
+        name: "",
+        type: "bool[]",
+      },
     ],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "_nftId",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
-      {
-        "internalType": "uint256",
-        "name": "_subnetId",
-        "type": "uint256"
-      }
     ],
-    "name": "getSupportAddress",
-    "outputs": [
+    name: "getSupportAddress",
+    outputs: [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "supportAddress",
-        "type": "address"
+        internalType: "address",
+        name: "supportAddress",
+        type: "address",
       },
       {
-        "internalType": "uint256",
-        "name": "nftID",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
+      },
     ],
-    "name": "getSupportFeesForNFT",
-    "outputs": [
+    name: "getSupportFeesForNFT",
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "supportPercentage",
-        "type": "uint256"
-      }
+        internalType: "uint256[]",
+        name: "supportFactor",
+        type: "uint256[]",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
+        internalType: "bytes32",
+        name: "role",
+        type: "bytes32",
       },
       {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
     ],
-    "name": "grantRole",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "grantRole",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
+        internalType: "bytes32",
+        name: "role",
+        type: "bytes32",
       },
       {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
     ],
-    "name": "hasRole",
-    "outputs": [
+    name: "hasRole",
+    outputs: [
       {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
+      {
+        internalType: "address",
+        name: "_GlobalDAO",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_LIMIT_NFT_SUBNETS",
+        type: "uint256",
+      },
       {
-        "internalType": "address",
-        "name": "_GlobalDAO",
-        "type": "address"
+        internalType: "uint256",
+        name: "_MIN_TIME_FUNDS",
+        type: "uint256",
       },
       {
-        "internalType": "uint256",
-        "name": "_LIMIT_NFT_SUBNETS",
-        "type": "uint256"
+        internalType: "address",
+        name: "_globalSupportAddress",
+        type: "address",
       },
       {
-        "internalType": "uint256",
-        "name": "_MIN_TIME_FUNDS",
-        "type": "uint256"
+        internalType: "uint256[]",
+        name: "_globalSupportFactor",
+        type: "uint256[]",
       },
       {
-        "internalType": "address",
-        "name": "_globalSupportAddress",
-        "type": "address"
+        internalType: "contract IRegistration",
+        name: "_RegistrationContract",
+        type: "address",
       },
       {
-        "internalType": "uint256",
-        "name": "_GLOBAL_SUPPORT_FEE",
-        "type": "uint256"
+        internalType: "contract IApplicationNFT",
+        name: "_ApplicationNFT",
+        type: "address",
       },
       {
-        "internalType": "contract IRegistration",
-        "name": "_RegistrationContract",
-        "type": "address"
+        internalType: "contract ISubscriptionBalance",
+        name: "_SubscriptionBalance",
+        type: "address",
       },
       {
-        "internalType": "contract IERC721",
-        "name": "_ApplicationNFT",
-        "type": "address"
+        internalType: "contract IBalanceCalculator",
+        name: "_BalanceCalculator",
+        type: "address",
       },
       {
-        "internalType": "contract ISubscriptionBalance",
-        "name": "_SubscriptionBalance",
-        "type": "address"
+        internalType: "contract IERC20Upgradeable",
+        name: "_XCT",
+        type: "address",
       },
       {
-        "internalType": "contract IERC20Upgradeable",
-        "name": "_XCT",
-        "type": "address"
+        internalType: "uint256",
+        name: "_REQD_NOTICE_TIME_S_PROVIDER",
+        type: "uint256",
       },
       {
-        "internalType": "uint256",
-        "name": "_REQD_NOTICE_TIME_S_PROVIDER",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "_REQD_COOLDOWN_S_PROVIDER",
+        type: "uint256",
       },
+    ],
+    name: "initialize",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "isBridgeRole",
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "_REQD_COOLDOWN_S_PROVIDER",
-        "type": "uint256"
-      }
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
     ],
-    "name": "initialize",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [],
-    "name": "isBridgeRole",
-    "outputs": [
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    name: "nftSubscription",
+    outputs: [
+      {
+        internalType: "address",
+        name: "referralAddress",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "licenseAddress",
+        type: "address",
+      },
       {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
+        internalType: "address",
+        name: "supportAddress",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "platformAddress",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "createTime",
+        type: "uint256",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [],
-    "name": "paused",
-    "outputs": [
+    inputs: [],
+    name: "paused",
+    outputs: [
       {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
     ],
-    "name": "platformAddressList",
-    "outputs": [
+    name: "platformAddressList",
+    outputs: [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
     ],
-    "name": "platformAddressMap",
-    "outputs": [
+    name: "platformAddressMap",
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "platformPercentage",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "platformPercentage",
+        type: "uint256",
       },
       {
-        "internalType": "uint256",
-        "name": "discountPercentage",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "discountPercentage",
+        type: "uint256",
       },
       {
-        "internalType": "uint256",
-        "name": "referralPercentage",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "referralPercentage",
+        type: "uint256",
       },
       {
-        "internalType": "uint256",
-        "name": "referralExpiryDuration",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "referralExpiryDuration",
+        type: "uint256",
       },
       {
-        "internalType": "bool",
-        "name": "active",
-        "type": "bool"
-      }
+        internalType: "bool",
+        name: "active",
+        type: "bool",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "_nftId",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
-      {
-        "internalType": "uint256",
-        "name": "_subnetId",
-        "type": "uint256"
-      }
     ],
-    "name": "r_licenseFee",
-    "outputs": [
+    name: "r_licenseFactor",
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+        internalType: "uint256[]",
+        name: "",
+        type: "uint256[]",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
+        internalType: "bytes32",
+        name: "role",
+        type: "bytes32",
       },
       {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
     ],
-    "name": "renounceRole",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "renounceRole",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
     ],
-    "name": "requestChangeMap",
-    "outputs": [
+    name: "requestChangeMap",
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "SupportAddressRequestTime",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "SupportAddressRequestTime",
+        type: "uint256",
       },
       {
-        "internalType": "uint256",
-        "name": "SupportAddressApplyTime",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "SupportAddressApplyTime",
+        type: "uint256",
       },
       {
-        "internalType": "address",
-        "name": "supportAddress",
-        "type": "address"
-      }
+        internalType: "address",
+        name: "supportAddress",
+        type: "address",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "nftOwner",
-        "type": "address"
+        internalType: "address",
+        name: "nftOwner",
+        type: "address",
       },
       {
-        "internalType": "uint256",
-        "name": "nftID",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
       {
-        "internalType": "uint256",
-        "name": "subnetID",
-        "type": "uint256"
+        internalType: "address",
+        name: "newSupportAddress",
+        type: "address",
       },
-      {
-        "internalType": "address",
-        "name": "newSupportAddress",
-        "type": "address"
-      }
     ],
-    "name": "requestSupportChange",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "requestSupportChange",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
+        internalType: "bytes32",
+        name: "role",
+        type: "bytes32",
       },
       {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
     ],
-    "name": "revokeRole",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "revokeRole",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "supportAddress",
-        "type": "address"
+        internalType: "address",
+        name: "supportAddress",
+        type: "address",
       },
       {
-        "internalType": "uint256",
-        "name": "nftID",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
       {
-        "internalType": "uint256",
-        "name": "supportPercentage",
-        "type": "uint256"
-      }
+        internalType: "uint256[]",
+        name: "supportFactor",
+        type: "uint256[]",
+      },
     ],
-    "name": "setSupportFeesForNFT",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "setSupportFeesForNFT",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "subscriber",
-        "type": "address"
+        internalType: "address",
+        name: "subscriber",
+        type: "address",
       },
       {
-        "internalType": "uint256",
-        "name": "_balanceToAdd",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "balanceToAdd",
+        type: "uint256",
       },
       {
-        "internalType": "uint256",
-        "name": "_nftId",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
       {
-        "internalType": "uint256",
-        "name": "_subnetId",
-        "type": "uint256"
+        internalType: "uint256[]",
+        name: "subnetList",
+        type: "uint256[]",
       },
       {
-        "internalType": "address",
-        "name": "_referralAddress",
-        "type": "address"
+        internalType: "address",
+        name: "referralAddress",
+        type: "address",
       },
       {
-        "internalType": "address",
-        "name": "_licenseAddress",
-        "type": "address"
+        internalType: "address",
+        name: "licenseAddress",
+        type: "address",
       },
       {
-        "internalType": "address",
-        "name": "_supportAddress",
-        "type": "address"
+        internalType: "address",
+        name: "supportAddress",
+        type: "address",
       },
       {
-        "internalType": "address",
-        "name": "_platformAddress",
-        "type": "address"
+        internalType: "address",
+        name: "platformAddress",
+        type: "address",
       },
       {
-        "internalType": "uint256",
-        "name": "_licenseFee",
-        "type": "uint256"
+        internalType: "uint256[]",
+        name: "licenseFactor",
+        type: "uint256[]",
       },
       {
-        "internalType": "int256[]",
-        "name": "_deltaCompute",
-        "type": "int256[]"
-      }
+        internalType: "int256[][]",
+        name: "deltaCompute",
+        type: "int256[][]",
+      },
     ],
-    "name": "subscribe",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "subscribeBatch",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "subscriber",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_balanceToAdd",
-        "type": "uint256"
-      },
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "_nftId",
-        "type": "uint256"
+        internalType: "address",
+        name: "subscriber",
+        type: "address",
       },
       {
-        "internalType": "uint256[]",
-        "name": "_subnetId",
-        "type": "uint256[]"
+        internalType: "uint256",
+        name: "balanceToAdd",
+        type: "uint256",
       },
       {
-        "internalType": "address[]",
-        "name": "_referralAddress",
-        "type": "address[]"
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
       {
-        "internalType": "address[]",
-        "name": "_licenseAddress",
-        "type": "address[]"
+        internalType: "uint256[]",
+        name: "subnetList",
+        type: "uint256[]",
       },
       {
-        "internalType": "address[]",
-        "name": "_supportAddress",
-        "type": "address[]"
+        internalType: "int256[][]",
+        name: "deltaCompute",
+        type: "int256[][]",
       },
-      {
-        "internalType": "address[]",
-        "name": "_platformAddress",
-        "type": "address[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "_licenseFee",
-        "type": "uint256[]"
-      },
-      {
-        "internalType": "int256[][]",
-        "name": "_deltaCompute",
-        "type": "int256[][]"
-      }
     ],
-    "name": "subscribeBatch",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "subscribeToSubnetList",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
     ],
-    "name": "subscribedSubnetsOfNFT",
-    "outputs": [
+    name: "subscribedSubnetsOfNFT",
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
     ],
-    "name": "supportAddressList",
-    "outputs": [
+    name: "supportAddressList",
+    outputs: [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
+        internalType: "address",
+        name: "",
+        type: "address",
       },
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
     ],
-    "name": "supportAddressToNFT",
-    "outputs": [
+    name: "supportAddressToNFT",
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "supportPercentage",
-        "type": "uint256"
+        internalType: "bool",
+        name: "active",
+        type: "bool",
       },
-      {
-        "internalType": "bool",
-        "name": "active",
-        "type": "bool"
-      }
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "bytes4",
-        "name": "interfaceId",
-        "type": "bytes4"
-      }
+        internalType: "bytes4",
+        name: "interfaceId",
+        type: "bytes4",
+      },
     ],
-    "name": "supportsInterface",
-    "outputs": [
+    name: "supportsInterface",
+    outputs: [
       {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "nftID",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
-      {
-        "internalType": "uint256",
-        "name": "subnetID",
-        "type": "uint256"
-      }
     ],
-    "name": "t_supportPercent",
-    "outputs": [
+    name: "t_supportFactor",
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+        internalType: "uint256[]",
+        name: "",
+        type: "uint256[]",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "nftID",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
-      {
-        "internalType": "uint256",
-        "name": "subnetID",
-        "type": "uint256"
-      }
     ],
-    "name": "u_referralPercent",
-    "outputs": [
+    name: "u_referralFactor",
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "userSubscription",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "referralAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "licenseAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "supportAddress",
-        "type": "address"
-      },
+    inputs: [
       {
-        "internalType": "address",
-        "name": "platformAddress",
-        "type": "address"
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
       {
-        "internalType": "uint256",
-        "name": "licenseFee",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
-      {
-        "internalType": "uint256",
-        "name": "supportPercentage",
-        "type": "uint256"
-      },
+    ],
+    name: "userSubscription",
+    outputs: [
       {
-        "internalType": "bool",
-        "name": "subscribed",
-        "type": "bool"
+        internalType: "bool",
+        name: "subscribed",
+        type: "bool",
       },
       {
-        "internalType": "uint256",
-        "name": "subnetArrayID",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "subnetArrayID",
+        type: "uint256",
       },
-      {
-        "internalType": "uint256",
-        "name": "createTime",
-        "type": "uint256"
-      }
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "nftID",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
-      {
-        "internalType": "uint256",
-        "name": "subnetID",
-        "type": "uint256"
-      }
     ],
-    "name": "v_platformPercent",
-    "outputs": [
+    name: "v_platformFactor",
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "nftID",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "nftID",
+        type: "uint256",
       },
-      {
-        "internalType": "uint256",
-        "name": "subnetID",
-        "type": "uint256"
-      }
     ],
-    "name": "w_discountPercent",
-    "outputs": [
+    name: "w_discountFactor",
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
-  }
+    stateMutability: "view",
+    type: "function",
+  },
 ];
 
 export default ABI;
